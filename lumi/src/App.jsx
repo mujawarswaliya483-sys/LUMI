@@ -6,7 +6,7 @@ import { useState } from 'react'
 import Home from './pages/Home'
 import RoleSelection from './pages/RoleSelection'
 import CheckIn from './pages/CheckIn'
-
+import SafetyCheck from './pages/SafetyCheck'
 
 function App() {
 
@@ -38,6 +38,42 @@ function App() {
     // This is useful while developing and debugging.
     console.log('Selected LUMI role:', role)
 
+    // ==================================================
+// CHECK-IN SCREEN
+// ==================================================
+//
+// This screen appears after the user chooses:
+// "I need support"
+//
+// The CheckIn component will send the selected
+// emotional state back to this App component.
+if (screen === 'check-in') {
+  return (
+    <CheckIn
+
+      // If the user presses Back on CheckIn,
+      // return to RoleSelection.
+      onBack={() => setScreen('role-selection')}
+
+      // This receives the emotional state selected
+      // by the user.
+      onContinue={(emotion) => {
+
+        // For now, just show the value in the console.
+        //
+        // Example:
+        // "alone"
+        // "overthinking"
+        // "stressed"
+        console.log('Selected emotional state:', emotion)
+
+        // We are NOT moving to the next screen yet.
+        //
+        // First we will build the Safety Check.
+      }}
+    />
+  )
+}
 
     // IMPORTANT:
     //
@@ -49,6 +85,25 @@ function App() {
     // For now, we simply store the selected role.
   }
 
+
+  if (screen === 'safety-check') {
+  return (
+    <SafetyCheck
+      onBack={() => setScreen('check-in')}
+      onAnswer={(answer) => {
+        console.log('Safety answer:', answer)
+
+        if (answer === 'safe') {
+          setScreen('need-discovery')
+        }
+
+        if (answer === 'unsure' || answer === 'immediate-help') {
+          setScreen('safety-support')
+        }
+      }}
+    />
+  )
+}
 
   // ==================================================
   // HOME SCREEN

@@ -36,9 +36,8 @@ function RoleSelection({ onSelectRole, onBack }) {
         {/* Logo */}
 
         <div className="text-lg font-semibold tracking-tight">
-          lumi
+          logo of lumi
         </div>
-
 
         {/* Empty space keeps the logo visually centered */}
 
