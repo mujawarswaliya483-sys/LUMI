@@ -1,193 +1,413 @@
-// useState lets React remember information that can change,
-// such as which screen the user is currently viewing.
+// useState allows React to remember values
+// that change while the user interacts with the app.
 import { useState } from 'react'
+import { Check, X } from 'lucide-react'
 
-// Import our different pages/components.
+// Import all screens/pages used by LUMI.
 import Home from './pages/Home'
 import RoleSelection from './pages/RoleSelection'
 import CheckIn from './pages/CheckIn'
 import SafetyCheck from './pages/SafetyCheck'
+import SafetySupport from './pages/SafetySupport'
+import NeedDiscovery from './pages/NeedDiscovery'
+import Connect from './pages/connect'
+import ConnectionConsent from './pages/ConnectionConsent'
+import CompanionRequest from './pages/CompanionRequest'
 
 function App() {
 
-  // `screen` stores the current screen.
+  // screen tells LUMI which page should currently be displayed.
   //
-  // At the beginning:
+  // Example:
   // screen = "home"
+  // → Home component is shown.
   //
-  // Later, when we call setScreen("role-selection"),
-  // React will show the RoleSelection component.
+  // screen = "connect"
+  // → Connect component is shown.
   const [screen, setScreen] = useState('home')
 
-
-  // This will store whether the person wants support
-  // or wants to become a LUMI Companion.
-  //
-  // It starts as null because nothing has been selected yet.
+  // This stores whether the person is using LUMI
+  // as a support seeker or Companion.
   const [userRole, setUserRole] = useState(null)
 
 
-  // This function runs when the user selects
-  // an option on the RoleSelection screen.
+  // --------------------------------------------------
+  // ROLE SELECTION
+  // --------------------------------------------------
+
   const handleRoleSelection = (role) => {
 
-    // Save the selected role.
+    // Save the selected role in React state.
     setUserRole(role)
 
-    // Show the selected role in the browser console.
-    // This is useful while developing and debugging.
     console.log('Selected LUMI role:', role)
 
-    // ==================================================
-// CHECK-IN SCREEN
-// ==================================================
-//
-// This screen appears after the user chooses:
-// "I need support"
-//
-// The CheckIn component will send the selected
-// emotional state back to this App component.
-if (screen === 'check-in') {
-  return (
-    <CheckIn
+    // If the person needs support,
+    // start the support journey.
+    if (role === 'support-seeker') {
+      setScreen('check-in')
+    }
 
-      // If the user presses Back on CheckIn,
-      // return to RoleSelection.
-      onBack={() => setScreen('role-selection')}
-
-      // This receives the emotional state selected
-      // by the user.
-      onContinue={(emotion) => {
-
-        // For now, just show the value in the console.
-        //
-        // Example:
-        // "alone"
-        // "overthinking"
-        // "stressed"
-        console.log('Selected emotional state:', emotion)
-
-        // We are NOT moving to the next screen yet.
-        //
-        // First we will build the Safety Check.
-      }}
-    />
-  )
-}
-
-    // IMPORTANT:
-    //
-    // We are NOT navigating anywhere yet.
-    //
-    // We will create the Support Check-In and
-    // Companion Onboarding screens next.
-    //
-    // For now, we simply store the selected role.
+    // Companion onboarding will be built later.
+    if (role === 'companion') {
+      console.log('Companion onboarding will come next.')
+    }
   }
 
 
-  if (screen === 'safety-check') {
-  return (
-    <SafetyCheck
-      onBack={() => setScreen('check-in')}
-      onAnswer={(answer) => {
-        console.log('Safety answer:', answer)
-
-        if (answer === 'safe') {
-          setScreen('need-discovery')
-        }
-
-        if (answer === 'unsure' || answer === 'immediate-help') {
-          setScreen('safety-support')
-        }
-      }}
-    />
-  )
-}
-
-  // ==================================================
-  // HOME SCREEN
-  // ==================================================
+  // --------------------------------------------------
+  // HOME
+  // --------------------------------------------------
 
   if (screen === 'home') {
     return (
       <Home
-        // We give Home a function called `onStart`.
-
-        // When the user clicks the main button,
-        // this function changes the screen from:
-        //
-        // "home"
-        //
-        // to:
-        //
-        // "role-selection"
         onStart={() => setScreen('role-selection')}
       />
     )
   }
 
 
-  // ==================================================
-  // ROLE SELECTION SCREEN
-  // ==================================================
+  // --------------------------------------------------
+  // ROLE SELECTION
+  // --------------------------------------------------
 
   if (screen === 'role-selection') {
     return (
       <RoleSelection
-
-        // Give RoleSelection the function that handles
-        // the selected role.
         onSelectRole={handleRoleSelection}
-
-        // If the user presses Back,
-        // return to the Home screen.
         onBack={() => setScreen('home')}
       />
     )
   }
 
-  // ==================================================
-// CHECK-IN SCREEN
-// ==================================================
+
+  // --------------------------------------------------
+  // EMOTIONAL CHECK-IN
+  // --------------------------------------------------
+
+  if (screen === 'check-in') {
+    return (
+      <CheckIn
+        onBack={() => setScreen('role-selection')}
+
+        onContinue={(emotion) => {
+
+          console.log('Selected emotional state:', emotion)
+
+          // Save the emotion later in our backend.
+          //
+          // For now we only move to the next screen.
+          setScreen('safety-check')
+        }}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // SAFETY CHECK
+  // --------------------------------------------------
+
+  if (screen === 'safety-check') {
+    return (
+      <SafetyCheck
+        onBack={() => setScreen('check-in')}
+
+        onAnswer={(answer) => {
+
+          console.log('Safety answer:', answer)
+
+          // Safe users can continue normally.
+          if (answer === 'safe') {
+            setScreen('need-discovery')
+          }
+
+          // If the person is unsure or indicates
+          // immediate danger, don't send them to
+          // Companion matching.
+          if (
+            answer === 'unsure' ||
+            answer === 'immediate-help'
+          ) {
+            setScreen('safety-support')
+          }
+        }}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // SAFETY SUPPORT
+  // --------------------------------------------------
+
+  if (screen === 'safety-support') {
+    return (
+      <SafetySupport
+        onBack={() => setScreen('safety-check')}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // NEED DISCOVERY
+  // --------------------------------------------------
+
+  if (screen === 'need-discovery') {
+    return (
+      <NeedDiscovery
+
+        onBack={() => setScreen('safety-check')}
+
+        onSelectNeed={(need) => {
+
+          console.log('Selected support need:', need)
+
+          // CONNECT route
+          if (need === 'connect') {
+            setScreen('connect')
+          }
+
+          // PROCESS will be implemented next.
+          if (need === 'process') {
+            console.log('PROCESS route will come next.')
+          }
+
+          // CALM will be implemented after PROCESS.
+          if (need === 'calm') {
+            console.log('CALM route will come next.')
+          }
+
+          // LUMI can later intelligently decide
+          // the route when the user doesn't know.
+          if (need === 'unknown') {
+            console.log('LUMI will help decide the route.')
+          }
+        }}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // CONNECT
+  // --------------------------------------------------
+
+  if (screen === 'connect') {
+    return (
+      <Connect
+
+        // Back → Need Discovery
+        onBack={() => setScreen('need-discovery')}
+
+        // User clicked "Request connection"
+        onContinue={() => {
+
+          console.log('Connection request sent.')
+
+          // IMPORTANT:
+          // We DO NOT open chat immediately.
+          //
+          // Matching ≠ consent.
+          //
+          // The Companion must accept first.
+          setScreen('connection-consent')
+        }}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // CONNECTION CONSENT
+  // --------------------------------------------------
+
+  if (screen === 'connection-consent') {
+    return (
+      <ConnectionConsent
+
+        // Back → Connect screen
+        onBack={() => setScreen('connect')}
+
+        // User continues after understanding
+        // the consent process.
+        onAccept={() => {
+
+          console.log('Waiting for Companion consent.')
+
+          // For now we will go to a temporary
+          // connection-pending screen.
+          setScreen('companion-request')
+        }}
+
+        // User cancels the request.
+        onDecline={() => {
+
+          console.log('Connection request cancelled.')
+
+          setScreen('need-discovery')
+        }}
+      />
+    )
+  }
+
+
+  // --------------------------------------------------
+  // CONNECTION PENDING
+  // --------------------------------------------------
+
+  if (screen === 'connection-pending') {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
+
+        <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
+
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
+            <Check size={26} />
+          </div>
+
+          <h1 className="mt-6 text-3xl font-semibold">
+            Request sent
+          </h1>
+
+          <p className="mt-4 leading-7 text-[#716b75]">
+            The Companion has been asked whether they would like
+            to connect. LUMI will only create the conversation
+            after both people agree.
+          </p>
+
+          <p className="mt-4 text-sm leading-6 text-[#958d97]">
+            In the real version, this screen would wait for the
+            Companion's response through the backend.
+          </p>
+
+          <button
+            onClick={() => setScreen('need-discovery')}
+            className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
+          >
+            Back to support options
+          </button>
+
+        </div>
+
+      </main>
+    )
+  }
+
+  // --------------------------------------------------
+// COMPANION REQUEST
+// --------------------------------------------------
 //
-// This screen appears after the user chooses:
-// "I need support"
+// This represents the Companion's side of the system.
 //
-// The CheckIn component will send the selected
-// emotional state back to this App component.
-if (screen === 'check-in') {
+// In the real application this screen would appear
+// when the backend tells the Companion that someone
+// has requested a connection.
+//
+// For now we open it manually for frontend testing.
+if (screen === 'companion-request') {
   return (
-    <CheckIn
+    <CompanionRequest
 
-      // If the user presses Back on CheckIn,
-      // return to RoleSelection.
-      onBack={() => setScreen('role-selection')}
+      // Back → previous screen
+      onBack={() => setScreen('home')}
 
-      // This receives the emotional state selected
-      // by the user.
-      onContinue={(emotion) => {
+      // Companion accepted
+      onAccept={() => {
+        console.log('Companion accepted the connection.')
 
-        // For now, just show the value in the console.
-        //
-        // Example:
-        // "alone"
-        // "overthinking"
-        // "stressed"
-        console.log('Selected emotional state:', emotion)
+        setScreen('connection-established')
+      }}
 
-        // We are NOT moving to the next screen yet.
-        //
-        // First we will build the Safety Check.
+      // Companion declined
+      onDecline={() => {
+        console.log('Companion declined the connection.')
+
+        setScreen('connection-declined')
       }}
     />
   )
 }
 
-  // If React doesn't recognize the current screen,
-  // don't render anything.
-  return null
+// --------------------------------------------------
+// CONNECTION ESTABLISHED
+// --------------------------------------------------
+
+if (screen === 'connection-established') {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
+
+      <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
+
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e6f1ed] text-[#54786b]">
+          <Check size={26} />
+        </div>
+
+        <h1 className="mt-6 text-3xl font-semibold">
+          Connection established
+        </h1>
+
+        <p className="mt-4 leading-7 text-[#716b75]">
+          Both people agreed to connect. The LUMI conversation
+          can now begin.
+        </p>
+
+        <p className="mt-4 text-sm leading-6 text-[#958d97]">
+          The protected chat interface will be built next.
+        </p>
+
+      </div>
+
+    </main>
+  )
 }
 
+
+// --------------------------------------------------
+// CONNECTION DECLINED
+// --------------------------------------------------
+
+if (screen === 'connection-declined') {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
+
+      <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
+
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
+          <X size={25} />
+        </div>
+
+        <h1 className="mt-6 text-3xl font-semibold">
+          Request declined
+        </h1>
+
+        <p className="mt-4 leading-7 text-[#716b75]">
+          That's okay. Companions can decline a request whenever
+          they don't feel comfortable or available.
+        </p>
+
+        <p className="mt-4 text-sm leading-6 text-[#958d97]">
+          In the real LUMI system, the Support Seeker could be
+          offered another suitable Companion or another support
+          route such as PROCESS or CALM.
+        </p>
+
+        <button
+          onClick={() => setScreen('home')}
+          className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
+        >
+          Return to LUMI
+        </button>
+
+      </div>
+
+    </main>
+  )
+}
+
+  return null
+}
 
 export default App
