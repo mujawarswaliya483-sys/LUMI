@@ -13,7 +13,7 @@ import NeedDiscovery from './pages/NeedDiscovery'
 import Connect from './pages/connect'
 import ConnectionConsent from './pages/ConnectionConsent'
 import CompanionRequest from './pages/CompanionRequest'
-
+import Chat from './pages/chat'
 function App() {
 
   // screen tells LUMI which page should currently be displayed.
@@ -219,7 +219,6 @@ function App() {
     )
   }
 
-
   // --------------------------------------------------
   // CONNECTION CONSENT
   // --------------------------------------------------
@@ -350,13 +349,16 @@ if (screen === 'connection-established') {
         </h1>
 
         <p className="mt-4 leading-7 text-[#716b75]">
-          Both people agreed to connect. The LUMI conversation
-          can now begin.
+          Both people agreed to connect. You can now start a
+          protected LUMI conversation.
         </p>
 
-        <p className="mt-4 text-sm leading-6 text-[#958d97]">
-          The protected chat interface will be built next.
-        </p>
+        <button
+          onClick={() => setScreen('chat')}
+          className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
+        >
+          Open conversation
+        </button>
 
       </div>
 
@@ -407,6 +409,26 @@ if (screen === 'connection-declined') {
   )
 }
 
+// --------------------------------------------------
+// CHAT
+// --------------------------------------------------
+
+if (screen === 'chat') {
+  return (
+    <Chat
+
+      // Back → connection established screen
+      onBack={() => setScreen('connection-established')}
+
+      // Leave conversation
+      onLeave={() => {
+        console.log('User left the conversation.')
+
+        setScreen('need-discovery')
+      }}
+    />
+  )
+}
   return null
 }
 

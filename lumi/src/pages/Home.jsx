@@ -43,8 +43,8 @@ function Home({ onStart }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#29252d] shadow-sm">
 
             <Sparkles
-              size={18}
-              strokeWidth={1.7}
+              size={17}
+              strokeWidth={1.9}
               className="text-white"
             />
 
@@ -75,7 +75,7 @@ function Home({ onStart }) {
             Privacy
           </a>
 
-          <button className="rounded-full border border-[#ddd6dc] bg-white/70 px-5 py-2.5 font-medium text-[#29252d] transition hover:bg-white">
+          <button className="rounded-full border border-[#ddd6dc] bg-white/70 px-5 py-2.5 font-medium text-[#29252d] transition hover:bg-black/5">
             Sign in
           </button>
 
@@ -105,7 +105,7 @@ function Home({ onStart }) {
 
               <span className="h-2 w-2 rounded-full bg-[#9b7bb5]" />
 
-              Emotional support, when you need it
+              Emotional support, when you need it 🍃.
 
             </div>
 
@@ -127,9 +127,9 @@ function Home({ onStart }) {
 
             <p className="mt-7 max-w-xl text-lg leading-8 text-[#716b75] sm:text-xl">
 
-              When a difficult moment hits, LUMI helps you find the kind of
-              support that fits what you need right now — someone who
-              understands, a space to process, or simply a moment to breathe.
+              When everything feels like too much, LUMI meets you right where you are.
+               Whether you need a listening ear that truly understands, a safe space to untangle your thoughts, 
+               or just a quiet moment to breathe, we help you find the comfort you need to carry on.
 
             </p>
 
@@ -158,13 +158,13 @@ function Home({ onStart }) {
                 // RoleSelection appears
                 onClick={onStart}
 
-                className="group inline-flex items-center justify-center gap-3 rounded-full bg-[#29252d] px-7 py-4 text-base font-medium text-white shadow-lg shadow-[#29252d]/10 transition duration-300 hover:-translate-y-0.5 hover:bg-[#3b3540]"
+                className="group inline-flex items-center justify-center gap-3 rounded-full bg-[#29252d] px-7 py-4 text-base font-medium text-white shadow-lg shadow-[#29252d]/10 transition duration-300 hover:-translate-y-0.5 hover:bg-purple-950 hover:shadow-[#29252d]/20 sm:text-lg"
               >
 
                 I'm having a difficult moment
 
                 <ArrowRight
-                  size={18}
+                  size={17}
                   className="transition-transform duration-300 group-hover:translate-x-1"
                 />
 
