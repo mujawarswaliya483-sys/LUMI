@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Check, X } from 'lucide-react'
 
-// --------------------------------------------------
+// ==================================================
 // MAIN SCREENS
-// --------------------------------------------------
+// ==================================================
 
 import Home from './pages/Home'
 import RoleSelection from './pages/RoleSelection'
@@ -12,19 +12,20 @@ import SafetyCheck from './pages/SafetyCheck'
 import SafetySupport from './pages/SafetySupport'
 import NeedDiscovery from './pages/NeedDiscovery'
 
-// --------------------------------------------------
+// ==================================================
 // CONNECT ROUTE
-// --------------------------------------------------
+// ==================================================
 
 import Connect from './pages/Connect'
 import ConnectionConsent from './pages/ConnectionConsent'
 import CompanionRequest from './pages/CompanionRequest'
-import Chat from './pages/chat'
+import Chat from './pages/Chat'
 import ConversationEnded from './pages/ConversationEnded'
+import ConnectOutcome from './pages/ConnectOutcome'
 
-// --------------------------------------------------
+// ==================================================
 // PROCESS ROUTE
-// --------------------------------------------------
+// ==================================================
 
 import ProcessStart from './pages/ProcessStart'
 import ProcessThought from './pages/ProcessThought'
@@ -33,9 +34,35 @@ import ProcessNeed from './pages/ProcessNeed'
 import ProcessSummary from './pages/ProcessSummary'
 import ProcessNextStep from './pages/ProcessNextStep'
 import ProcessOutcome from './pages/ProcessOutcome'
-import SessionComplete from './pages/SessionComplete'
+
+// ==================================================
+// CALM ROUTE
+// ==================================================
+
 import Calm from './pages/Calm'
 import CalmOutcome from './pages/CalmOutcome'
+
+// ==================================================
+// COMMON SCREENS
+// ==================================================
+
+import SessionComplete from './pages/SessionComplete'
+import PersonalSupportProfile from './pages/PersonalSupportProfile'
+
+// ==================================================
+// STORAGE
+// ==================================================
+//
+// saveSession() stores completed LUMI sessions in
+// the browser's localStorage.
+//
+// This is currently only for our frontend prototype.
+// Later this will be replaced by backend/database
+// storage.
+// ==================================================
+
+import { saveSession } from './utils/sessionStorage'
+
 
 function App() {
 
@@ -43,15 +70,17 @@ function App() {
   // CURRENT SCREEN
   // ==================================================
   //
-  // This is our temporary navigation system.
+  // This is our simple navigation system for now.
   //
   // Example:
   //
-  // screen === 'home'
-  // → Home is displayed.
+  // screen = "home"
+  //          ↓
+  //        Home
   //
-  // screen === 'connect'
-  // → Connect is displayed.
+  // screen = "check-in"
+  //          ↓
+  //        CheckIn
   //
   // Later we can replace this with React Router.
   // ==================================================
@@ -67,30 +96,178 @@ function App() {
 
 
   // ==================================================
-  // PROCESS SESSION DATA
+  // CHECK-IN DATA
   // ==================================================
   //
-  // This stores the answers collected during
-  // the PROCESS journey.
+  // This stores the emotional state selected at the
+  // beginning of the session.
   //
   // Example:
   //
-  // thought → "I keep thinking about my friend."
-  // feeling → "Guilty"
-  // need    → "Reassurance"
+  // emotion = "overthinking"
+  // intensityBefore = 8
+  // ==================================================
+
+  const [checkInData, setCheckInData] = useState({
+    emotion: '',
+    intensityBefore: null,
+  })
+
+
+  // ==================================================
+  // SUPPORT ROUTE
+  // ==================================================
   //
-  // Later this information can be sent to
-  // our Express backend and MongoDB.
+  // LUMI chooses one of:
+  //
+  // connect
+  // process
+  // calm
+  //
+  // This becomes important for personalization later.
+  // ==================================================
+
+  const [supportRoute, setSupportRoute] = useState(null)
+
+
+  // ==================================================
+  // PROCESS DATA
   // ==================================================
 
   const [processData, setProcessData] = useState({
-  thought: '',
-  feeling: '',
-  need: '',
-  intensityBefore: 5,
-  intensityAfter: null,
-  whatHelped: '',
-})
+    thought: '',
+    feeling: '',
+    need: '',
+    intensityBefore: null,
+    intensityAfter: null,
+    whatHelped: '',
+    nextStep: '',
+  })
+
+
+  // ==================================================
+  // CALM DATA
+  // ==================================================
+
+  const [calmData, setCalmData] = useState({
+    intensityBefore: null,
+    intensityAfter: null,
+    whatHelped: '',
+  })
+
+
+  // ==================================================
+  // COMMON SESSION DATA
+  // ==================================================
+  //
+  // CONNECT, PROCESS and CALM eventually reach the
+  // same completion screen.
+  //
+  // Therefore we keep the final outcome here.
+  // ==================================================
+
+  const [sessionData, setSessionData] = useState({
+    route: null,
+    interventionCompleted: false,
+    intensityBefore: null,
+    intensityAfter: null,
+    whatHelped: '',
+  })
+
+
+  // ==================================================
+  // COMPLETE SESSION
+  // ==================================================
+  //
+  // IMPORTANT:
+  //
+  // All three routes use this function:
+  //
+  // CONNECT
+  // PROCESS
+  // CALM
+  //
+  // This prevents us from having three different
+  // storage systems.
+  //
+  // Once the user finishes an intervention:
+  //
+  // 1. Create one completed session object.
+  // 2. Save it to localStorage.
+  // 3. Store it in React state.
+  // 4. Show SessionComplete.
+  // ==================================================
+
+  const completeSession = ({
+    intensityAfter,
+    whatHelped,
+  }) => {
+
+    // ----------------------------------------------
+    // Create the final session object.
+    // ----------------------------------------------
+
+    const completedSession = {
+
+      // Emotional state selected at Check-In
+      emotion: checkInData.emotion,
+
+      // CONNECT / PROCESS / CALM
+      route: supportRoute,
+
+      // User's self-reported intensity before support
+      intensityBefore:
+        checkInData.intensityBefore,
+
+      // User's self-reported intensity after support
+      intensityAfter,
+
+      // What the user says helped
+      whatHelped,
+
+    }
+
+
+    // ----------------------------------------------
+    // Save the completed session.
+    //
+    // sessionStorage.js handles localStorage.
+    // ----------------------------------------------
+
+    saveSession(completedSession)
+
+
+    // ----------------------------------------------
+    // Also keep the same data in React state.
+    //
+    // React state allows the next screen to display
+    // the data immediately.
+    // ----------------------------------------------
+
+    setSessionData((previousData) => ({
+
+      ...previousData,
+
+      route: supportRoute,
+
+      interventionCompleted: true,
+
+      intensityBefore:
+        checkInData.intensityBefore,
+
+      intensityAfter,
+
+      whatHelped,
+
+    }))
+
+
+    // ----------------------------------------------
+    // Show the common completion screen.
+    // ----------------------------------------------
+
+    setScreen('session-complete')
+  }
 
 
   // ==================================================
@@ -99,27 +276,38 @@ function App() {
 
   const handleRoleSelection = (role) => {
 
-    // Save selected role.
     setUserRole(role)
 
-    console.log('Selected LUMI role:', role)
+    console.log(
+      'Selected LUMI role:',
+      role
+    )
 
 
-    // Support seeker → start support journey.
+    // ----------------------------------------------
+    // SUPPORT SEEKER
+    // ----------------------------------------------
+
     if (role === 'support-seeker') {
 
       setScreen('check-in')
 
+      return
     }
 
 
-    // Companion onboarding will be built later.
+    // ----------------------------------------------
+    // COMPANION
+    // ----------------------------------------------
+
     if (role === 'companion') {
 
-      console.log('Companion onboarding will come next.')
+      console.log(
+        'Companion onboarding will come next.'
+      )
 
+      return
     }
-
   }
 
 
@@ -131,10 +319,11 @@ function App() {
 
     return (
       <Home
-        onStart={() => setScreen('role-selection')}
+        onStart={() =>
+          setScreen('role-selection')
+        }
       />
     )
-
   }
 
 
@@ -146,16 +335,22 @@ function App() {
 
     return (
       <RoleSelection
-        onSelectRole={handleRoleSelection}
-        onBack={() => setScreen('home')}
+
+        onSelectRole={
+          handleRoleSelection
+        }
+
+        onBack={() =>
+          setScreen('home')
+        }
+
       />
     )
-
   }
 
 
   // ==================================================
-  // EMOTIONAL CHECK-IN
+  // CHECK-IN
   // ==================================================
 
   if (screen === 'check-in') {
@@ -167,23 +362,52 @@ function App() {
           setScreen('role-selection')
         }
 
-        onContinue={(emotion) => {
+        onContinue={(data) => {
 
           console.log(
-            'Selected emotional state:',
-            emotion
+            'Check-in data:',
+            data
           )
 
-          // Later we will store the emotion
-          // inside the support session.
+
+          // Save emotional state.
+
+          setCheckInData({
+
+            emotion:
+              data.emotion,
+
+            intensityBefore:
+              data.intensityBefore,
+
+          })
+
+
+          // Start a fresh common session.
+
+          setSessionData({
+
+            route: null,
+
+            interventionCompleted: false,
+
+            intensityBefore:
+              data.intensityBefore,
+
+            intensityAfter: null,
+
+            whatHelped: '',
+
+          })
+
+
+          // Continue to safety check.
 
           setScreen('safety-check')
-
         }}
 
       />
     )
-
   }
 
 
@@ -208,16 +432,26 @@ function App() {
           )
 
 
-          // Safe → continue normal support flow.
+          // ------------------------------------------
+          // SAFE
+          // ------------------------------------------
+
           if (answer === 'safe') {
 
             setScreen('need-discovery')
 
+            return
           }
 
 
-          // Unsure / immediate danger →
-          // do NOT send to Companion matching.
+          // ------------------------------------------
+          // UNSURE / IMMEDIATE HELP
+          // ------------------------------------------
+          //
+          // These users do NOT enter random Companion
+          // matching.
+          // ------------------------------------------
+
           if (
             answer === 'unsure' ||
             answer === 'immediate-help'
@@ -225,13 +459,13 @@ function App() {
 
             setScreen('safety-support')
 
+            return
           }
 
         }}
 
       />
     )
-
   }
 
 
@@ -243,17 +477,25 @@ function App() {
 
     return (
       <SafetySupport
+
         onBack={() =>
           setScreen('safety-check')
         }
+
       />
     )
-
   }
 
 
   // ==================================================
   // NEED DISCOVERY
+  // ==================================================
+  //
+  // This is where LUMI currently routes the user.
+  //
+  // CONNECT
+  // PROCESS
+  // CALM
   // ==================================================
 
   if (screen === 'need-discovery') {
@@ -273,75 +515,124 @@ function App() {
           )
 
 
-          // ------------------------------------------------
+          // ------------------------------------------
           // CONNECT
-          // ------------------------------------------------
+          // ------------------------------------------
 
           if (need === 'connect') {
+
+            setSupportRoute('connect')
+
+            setSessionData((previousData) => ({
+
+              ...previousData,
+
+              route: 'connect',
+
+            }))
+
 
             setScreen('connect')
 
             return
-
           }
 
 
-          // ------------------------------------------------
+          // ------------------------------------------
           // PROCESS
-          // ------------------------------------------------
+          // ------------------------------------------
 
           if (need === 'process') {
 
-            // Reset previous PROCESS answers
-            // whenever a new PROCESS journey begins.
+            setSupportRoute('process')
+
+            setSessionData((previousData) => ({
+
+              ...previousData,
+
+              route: 'process',
+
+            }))
+
 
             setProcessData({
+
               thought: '',
+
               feeling: '',
+
               need: '',
+
+              intensityBefore:
+                checkInData.intensityBefore,
+
+              intensityAfter: null,
+
+              whatHelped: '',
+
+              nextStep: '',
+
             })
+
 
             setScreen('process-start')
 
             return
-
           }
 
 
-          // ------------------------------------------------
+          // ------------------------------------------
           // CALM
-          // ------------------------------------------------
+          // ------------------------------------------
 
           if (need === 'calm') {
 
-            console.log(
-              'CALM route will come next.'
-            )
+            setSupportRoute('calm')
+
+            setSessionData((previousData) => ({
+
+              ...previousData,
+
+              route: 'calm',
+
+            }))
+
+
+            setCalmData({
+
+              intensityBefore:
+                checkInData.intensityBefore,
+
+              intensityAfter: null,
+
+              whatHelped: '',
+
+            })
+
+
+            setScreen('calm')
 
             return
-
           }
 
 
-          // ------------------------------------------------
+          // ------------------------------------------
           // UNKNOWN
-          // ------------------------------------------------
+          // ------------------------------------------
 
           if (need === 'unknown') {
 
             console.log(
-              'LUMI will help decide the route.'
+              'LUMI will help decide the support route.'
             )
 
             return
-
           }
 
         }}
 
       />
     )
-
   }
 
 
@@ -366,7 +657,6 @@ function App() {
 
       />
     )
-
   }
 
 
@@ -391,24 +681,21 @@ function App() {
           )
 
 
-          // Save thought.
           setProcessData((previousData) => ({
 
             ...previousData,
 
-            thought: thought,
+            thought,
 
           }))
 
 
-          // Move to feeling.
           setScreen('process-feeling')
 
         }}
 
       />
     )
-
   }
 
 
@@ -433,24 +720,21 @@ function App() {
           )
 
 
-          // Save feeling.
           setProcessData((previousData) => ({
 
             ...previousData,
 
-            feeling: feeling,
+            feeling,
 
           }))
 
 
-          // Move to need.
           setScreen('process-need')
 
         }}
 
       />
     )
-
   }
 
 
@@ -475,24 +759,21 @@ function App() {
           )
 
 
-          // Save support need.
           setProcessData((previousData) => ({
 
             ...previousData,
 
-            need: need,
+            need,
 
           }))
 
 
-          // Move to summary.
           setScreen('process-summary')
 
         }}
 
       />
     )
-
   }
 
 
@@ -505,17 +786,21 @@ function App() {
     return (
       <ProcessSummary
 
-        thought={processData.thought}
+        thought={
+          processData.thought
+        }
 
-        feeling={processData.feeling}
+        feeling={
+          processData.feeling
+        }
 
-        need={processData.need}
-
+        need={
+          processData.need
+        }
 
         onBack={() =>
           setScreen('process-need')
         }
-
 
         onContinue={() => {
 
@@ -525,7 +810,6 @@ function App() {
 
       />
     )
-
   }
 
 
@@ -542,7 +826,6 @@ function App() {
           setScreen('process-summary')
         }
 
-
         onSelect={(nextStep) => {
 
           console.log(
@@ -551,177 +834,168 @@ function App() {
           )
 
 
-          // ------------------------------------------------
-          // CONNECT
-          // ------------------------------------------------
+          setProcessData((previousData) => ({
 
-          if (nextStep === 'connect') {
+            ...previousData,
 
-            setScreen('connect')
+            nextStep,
 
-            return
-
-          }
+          }))
 
 
-          // ------------------------------------------------
-          // CALM
-          // ------------------------------------------------
+          // For this prototype all PROCESS options
+          // currently lead to the same outcome screen.
 
-          if (nextStep === 'calm') {
+          setScreen('process-outcome')
 
-            console.log(
-              'CALM route will come next.'
-            )
+        }}
 
-            return
-
-          }
+      />
+    )
+  }
 
 
-          // ------------------------------------------------
-          // WRITE
-          // ------------------------------------------------
+  // ==================================================
+  // PROCESS — OUTCOME
+  // ==================================================
 
-          if (nextStep === 'write') {
+  if (screen === 'process-outcome') {
 
-            console.log(
-              'Writing reflection will come next.'
-            )
+    return (
+      <ProcessOutcome
 
-            return
+        onBack={() =>
+          setScreen('process-next-step')
+        }
 
-          }
+        onContinue={(outcome) => {
 
-
-          // ------------------------------------------------
-          // SPACE
-          // ------------------------------------------------
-         
-          onSelect={(nextStep) => {
-
-  console.log(
-    'Selected next step:',
-    nextStep
-  )
+          console.log(
+            'PROCESS outcome:',
+            outcome
+          )
 
 
-  // Save the selected next step.
-  setProcessData((previousData) => ({
-    ...previousData,
-    nextStep: nextStep,
-  }))
+          // Save PROCESS outcome.
+
+          setProcessData((previousData) => ({
+
+            ...previousData,
+
+            intensityAfter:
+              outcome.intensityAfter,
+
+            whatHelped:
+              outcome.whatHelped,
+
+          }))
 
 
-  // For now all PROCESS next steps
-  // eventually lead to the outcome check.
-  //
-  // Later:
-  //
-  // write → writing activity
-  // connect → CONNECT
-  // calm → CALM
-  // space → short pause
-  //
-  // After the intervention:
-  //
-  // outcome measurement
-  //
+          // ------------------------------------------
+          // IMPORTANT
+          // ------------------------------------------
+          //
+          // Instead of directly going to
+          // SessionComplete, we use completeSession().
+          //
+          // This saves the session to localStorage.
+          // ------------------------------------------
+
+          completeSession({
+
+            intensityAfter:
+              outcome.intensityAfter,
+
+            whatHelped:
+              outcome.whatHelped,
+
+          })
+
+        }}
+
+      />
+    )
+  }
 
 
-  setScreen('process-outcome')
+  // ==================================================
+  // CALM
+  // ==================================================
 
-}}
+  if (screen === 'calm') {
 
-// ==================================================
-// PROCESS — OUTCOME
-// ==================================================
+    return (
+      <Calm
 
-if (screen === 'process-outcome') {
+        onBack={() =>
+          setScreen('need-discovery')
+        }
 
-  return (
-    <ProcessOutcome
+        onComplete={() => {
 
-      onBack={() =>
-        setScreen('process-next-step')
-      }
+          setScreen('calm-outcome')
 
+        }}
 
-      onContinue={(outcome) => {
-
-        console.log(
-          'PROCESS outcome:',
-          outcome
-        )
+      />
+    )
+  }
 
 
-        // Save outcome data.
-        setProcessData((previousData) => ({
+  // ==================================================
+  // CALM — OUTCOME
+  // ==================================================
 
-          ...previousData,
+  if (screen === 'calm-outcome') {
 
-          intensityAfter:
-            outcome.intensityAfter,
+    return (
+      <CalmOutcome
 
-          whatHelped:
-            outcome.whatHelped,
+        onBack={() =>
+          setScreen('calm')
+        }
 
-        }))
+        onContinue={(outcome) => {
 
-
-        // Move to completion screen.
-        setScreen('session-complete')
-
-      }}
-
-    />
-  )
-
-}
-// ==================================================
-// SESSION COMPLETE
-// ==================================================
-
-if (screen === 'session-complete') {
-
-  return (
-    <SessionComplete
-
-      intensityBefore={
-        processData.intensityBefore
-      }
-
-      intensityAfter={
-        processData.intensityAfter
-      }
-
-      whatHelped={
-        processData.whatHelped
-      }
+          console.log(
+            'CALM outcome:',
+            outcome
+          )
 
 
-      onContinue={() => {
+          // Save CALM outcome in its own state too.
 
-        // Start fresh support journey.
+          setCalmData((previousData) => ({
 
-        setProcessData({
-          thought: '',
-          feeling: '',
-          need: '',
-          intensityBefore: 5,
-          intensityAfter: null,
-          whatHelped: '',
-        })
+            ...previousData,
+
+            intensityAfter:
+              outcome.intensityAfter,
+
+            whatHelped:
+              outcome.whatHelped,
+
+          }))
 
 
-        setScreen('home')
+          // Save common completed session.
 
-      }}
+          completeSession({
 
-    />
-  )
+            intensityAfter:
+              outcome.intensityAfter,
 
-}
+            whatHelped:
+              outcome.whatHelped,
+
+          })
+
+        }}
+
+      />
+    )
+  }
+
 
   // ==================================================
   // CONNECT
@@ -736,18 +1010,15 @@ if (screen === 'session-complete') {
           setScreen('need-discovery')
         }
 
-
         onContinue={() => {
 
           console.log(
-            'Connection request sent.'
+            'Connection request prepared.'
           )
 
 
-          // Matching does NOT immediately
-          // create a chat.
-          //
-          // Mutual consent is required.
+          // Mutual consent is required before
+          // opening the conversation.
 
           setScreen('connection-consent')
 
@@ -755,7 +1026,6 @@ if (screen === 'session-complete') {
 
       />
     )
-
   }
 
 
@@ -772,43 +1042,26 @@ if (screen === 'session-complete') {
           setScreen('connect')
         }
 
-
         onAccept={() => {
 
           console.log(
-            'Connection request confirmed.'
+            'Support Seeker accepted connection.'
           )
 
 
-          // ------------------------------------------------
-          // FRONTEND DEMO
-          // ------------------------------------------------
+          // Temporary frontend simulation.
           //
-          // For now we simulate the Companion side.
-          //
-          // In the real application:
-          //
-          // Support Seeker
-          //       ↓
-          // Backend
-          //       ↓
-          // Companion
-          //       ↓
-          // Accept / Decline
-          //       ↓
-          // Backend
-          //
-          // ------------------------------------------------
+          // Later this will be controlled by the
+          // backend and Companion account.
 
           setScreen('companion-request')
 
         }}
 
-
         onDecline={() => {
 
           console.log(
-            'Connection request cancelled.'
+            'Support Seeker cancelled connection.'
           )
 
 
@@ -818,18 +1071,11 @@ if (screen === 'session-complete') {
 
       />
     )
-
   }
 
 
   // ==================================================
   // CONNECTION PENDING
-  // ==================================================
-  //
-  // This screen is currently kept for the future
-  // backend implementation.
-  //
-  // Later this will wait for a real Companion response.
   // ==================================================
 
   if (screen === 'connection-pending') {
@@ -840,27 +1086,24 @@ if (screen === 'session-complete') {
         <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
 
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
-            ✓
-          </div>
 
+            <Check size={25} />
+
+          </div>
 
           <h1 className="mt-6 text-3xl font-semibold">
             Request sent
           </h1>
 
-
           <p className="mt-4 leading-7 text-[#716b75]">
-            The Companion has been asked whether they would like
-            to connect. LUMI will only create the conversation
-            after both people agree.
+            The Companion has been asked whether they
+            would like to connect.
           </p>
-
 
           <p className="mt-4 text-sm leading-6 text-[#958d97]">
-            In the real version, this screen would wait for the
-            Companion's response through the backend.
+            LUMI only creates a conversation after both
+            people agree.
           </p>
-
 
           <button
             onClick={() =>
@@ -875,18 +1118,11 @@ if (screen === 'session-complete') {
 
       </main>
     )
-
   }
 
 
   // ==================================================
   // COMPANION REQUEST
-  // ==================================================
-  //
-  // This simulates the Companion's side.
-  //
-  // Later this screen will be opened on another
-  // user's device through the backend.
   // ==================================================
 
   if (screen === 'companion-request') {
@@ -898,33 +1134,34 @@ if (screen === 'session-complete') {
           setScreen('home')
         }
 
-
         onAccept={() => {
 
           console.log(
-            'Companion accepted the connection.'
+            'Companion accepted connection.'
           )
 
 
-          setScreen('connection-established')
+          setScreen(
+            'connection-established'
+          )
 
         }}
-
 
         onDecline={() => {
 
           console.log(
-            'Companion declined the connection.'
+            'Companion declined connection.'
           )
 
 
-          setScreen('connection-declined')
+          setScreen(
+            'connection-declined'
+          )
 
         }}
 
       />
     )
-
   }
 
 
@@ -939,24 +1176,20 @@ if (screen === 'session-complete') {
 
         <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
 
-
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e6f1ed] text-[#54786b]">
 
             <Check size={26} />
 
           </div>
 
-
           <h1 className="mt-6 text-3xl font-semibold">
             Connection established
           </h1>
 
-
           <p className="mt-4 leading-7 text-[#716b75]">
-            Both people agreed to connect. You can now start a
-            protected LUMI conversation.
+            Both people agreed to connect.
+            You can now start a protected LUMI conversation.
           </p>
-
 
           <button
             onClick={() =>
@@ -971,7 +1204,6 @@ if (screen === 'session-complete') {
 
       </main>
     )
-
   }
 
 
@@ -986,46 +1218,39 @@ if (screen === 'session-complete') {
 
         <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
 
-
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
 
             <X size={25} />
 
           </div>
 
-
           <h1 className="mt-6 text-3xl font-semibold">
             Request declined
           </h1>
 
-
           <p className="mt-4 leading-7 text-[#716b75]">
-            That's okay. Companions can decline a request whenever
+            That's okay. A Companion can decline whenever
             they don't feel comfortable or available.
           </p>
 
-
           <p className="mt-4 text-sm leading-6 text-[#958d97]">
-            In the real LUMI system, the Support Seeker could be
-            offered another suitable Companion or another support
-            route such as PROCESS or CALM.
+            LUMI can offer another suitable Companion or
+            another support route such as PROCESS or CALM.
           </p>
-
 
           <button
             onClick={() =>
-              setScreen('home')
+              setScreen('need-discovery')
             }
             className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
           >
-            Return to LUMI
+            Choose another support option
           </button>
 
         </div>
 
       </main>
     )
-
   }
 
 
@@ -1042,7 +1267,6 @@ if (screen === 'session-complete') {
           setScreen('connection-established')
         }
 
-
         onLeave={() => {
 
           console.log(
@@ -1050,17 +1274,12 @@ if (screen === 'session-complete') {
           )
 
 
-          // Show the dedicated conversation-ended
-          // screen instead of immediately jumping
-          // back to Need Discovery.
-
           setScreen('conversation-ended')
 
         }}
 
       />
     )
-
   }
 
 
@@ -1075,26 +1294,207 @@ if (screen === 'session-complete') {
 
         onContinue={() => {
 
-          setScreen('need-discovery')
+          setScreen('connect-outcome')
 
         }}
 
       />
     )
+  }
 
+
+  // ==================================================
+  // CONNECT — OUTCOME
+  // ==================================================
+
+  if (screen === 'connect-outcome') {
+
+    return (
+      <ConnectOutcome
+
+        onBack={() =>
+          setScreen('conversation-ended')
+        }
+
+        onContinue={(data) => {
+
+          console.log(
+            'CONNECT outcome:',
+            data
+          )
+
+
+          // ------------------------------------------
+          // Save CONNECT session.
+          //
+          // completeSession() handles:
+          //
+          // 1. localStorage
+          // 2. React session state
+          // 3. navigation
+          // ------------------------------------------
+
+          completeSession({
+
+            intensityAfter:
+              data.intensityAfter,
+
+            whatHelped:
+              data.whatHelped,
+
+          })
+
+        }}
+
+      />
+    )
+  }
+
+
+  // ==================================================
+  // SESSION COMPLETE
+  // ==================================================
+  //
+  // All three routes now arrive here:
+  //
+  // CONNECT
+  // PROCESS
+  // CALM
+  //
+  // And all three use sessionData.
+  // ==================================================
+
+  if (screen === 'session-complete') {
+
+    return (
+      <SessionComplete
+
+        intensityBefore={
+          sessionData.intensityBefore
+        }
+
+        intensityAfter={
+          sessionData.intensityAfter
+        }
+
+        whatHelped={
+          sessionData.whatHelped
+        }
+
+        onContinue={() => {
+
+          // ------------------------------------------
+          // Reset current session.
+          // ------------------------------------------
+
+          setCheckInData({
+
+            emotion: '',
+
+            intensityBefore: null,
+
+          })
+
+
+          setSupportRoute(null)
+
+
+          setProcessData({
+
+            thought: '',
+
+            feeling: '',
+
+            need: '',
+
+            intensityBefore: null,
+
+            intensityAfter: null,
+
+            whatHelped: '',
+
+            nextStep: '',
+
+          })
+
+
+          setCalmData({
+
+            intensityBefore: null,
+
+            intensityAfter: null,
+
+            whatHelped: '',
+
+          })
+
+
+          setSessionData({
+
+            route: null,
+
+            interventionCompleted: false,
+
+            intensityBefore: null,
+
+            intensityAfter: null,
+
+            whatHelped: '',
+
+          })
+
+
+          // Return to Home.
+
+          setScreen('home')
+
+        }}
+
+      />
+    )
+  }
+
+
+  // ==================================================
+  // PERSONAL SUPPORT PROFILE
+  // ==================================================
+  //
+  // This screen exists already.
+  //
+  // We will connect it to getSessions() in the next
+  // personalization step.
+  // ==================================================
+
+  if (screen === 'personal-support-profile') {
+
+    return (
+      <PersonalSupportProfile
+
+        profile={{
+          totalSessions: 0,
+          commonEmotions: [],
+          helpfulSupport: [],
+        }}
+
+        onBack={() =>
+          setScreen('home')
+        }
+
+        onContinue={() =>
+          setScreen('home')
+        }
+
+      />
+    )
   }
 
 
   // ==================================================
   // FALLBACK
   // ==================================================
-  //
-  // If screen somehow contains an unknown value,
-  // render nothing instead of crashing.
-  // ==================================================
 
   return null
 }
 
 
-exports default App
+export default App

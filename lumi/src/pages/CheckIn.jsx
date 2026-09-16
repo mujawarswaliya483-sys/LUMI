@@ -1,247 +1,296 @@
-// We use an icon from lucide-react for the Back button
-// and for the arrow inside each option.
+import { useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 
-// We reuse our Lumi character on this screen.
-import Lumi from '../components/Lumi'
-
-
-// These are the emotional states that the user can choose.
-//
-// IMPORTANT:
-// These are NOT diagnoses.
-//
-// They simply describe how the person might be feeling
-// in their own words.
-const emotionalStates = [
-  {
-    id: 'alone',
-    label: 'I feel alone',
-  },
-  {
-    id: 'overthinking',
-    label: "I can't stop thinking",
-  },
-  {
-    id: 'missing-someone',
-    label: "I'm missing someone",
-  },
-  {
-    id: 'overwhelmed',
-    label: "I'm overwhelmed",
-  },
-  {
-    id: 'frustrated',
-    label: "I'm frustrated",
-  },
-  {
-    id: 'stressed',
-    label: "I'm stressed",
-  },
-  {
-    id: 'low',
-    label: 'I feel low',
-  },
-  {
-    id: 'dont-want-to-talk',
-    label: "I don't want to talk",
-  },
-  {
-    id: 'dont-know',
-    label: "I don't know",
-  },
-]
-
-
-// CheckIn receives two functions from App.jsx:
-//
-// onBack
-// → tells App.jsx that the user wants to go back.
-//
-// onContinue
-// → tells App.jsx which emotional state the user selected.
 function CheckIn({ onBack, onContinue }) {
+
+  // ==================================================
+  // EMOTIONAL STATE
+  // ==================================================
+
+  const emotions = [
+    {
+      id: 'alone',
+      label: 'I feel alone',
+    },
+    {
+      id: 'overthinking',
+      label: "I can't stop thinking",
+    },
+    {
+      id: 'missing-someone',
+      label: "I'm missing someone",
+    },
+    {
+      id: 'overwhelmed',
+      label: "I'm overwhelmed",
+    },
+    {
+      id: 'frustrated',
+      label: "I'm frustrated",
+    },
+    {
+      id: 'stressed',
+      label: "I'm stressed",
+    },
+    {
+      id: 'low',
+      label: "I feel low",
+    },
+    {
+      id: 'dont-want-to-talk',
+      label: "I don't want to talk",
+    },
+    {
+      id: 'dont-know',
+      label: "I don't know",
+    },
+  ]
+
+
+  // ==================================================
+  // REACT STATE
+  // ==================================================
+  //
+  // selectedEmotion remembers which emotion the
+  // user selected.
+  //
+  // selectedIntensity remembers the 0–10 value.
+  // ==================================================
+
+  const [selectedEmotion, setSelectedEmotion] =
+    useState(null)
+
+  const [selectedIntensity, setSelectedIntensity] =
+    useState(null)
+
+
+  // ==================================================
+  // CONTINUE
+  // ==================================================
+
+  const handleContinue = () => {
+
+    // Don't continue until both answers exist.
+
+    if (
+      selectedEmotion === null ||
+      selectedIntensity === null
+    ) {
+      return
+    }
+
+
+    // Send both values to App.jsx.
+
+    onContinue({
+      emotion: selectedEmotion,
+      intensityBefore: selectedIntensity,
+    })
+
+  }
+
 
   return (
 
-    <main className="min-h-screen bg-[#fcf8f5] px-5 py-6 text-[#29252d]">
+    <main className="min-h-screen bg-[#fcf8f5] px-5 py-8 text-[#29252d]">
+
+      <div className="mx-auto max-w-2xl">
 
 
-      {/* ==========================================
-          HEADER
-          ========================================== */}
-
-      <header className="mx-auto flex max-w-6xl items-center justify-between">
-
-        {/* 
-          Back button.
-
-          When clicked:
-          CheckIn → onBack() → App.jsx
-
-          App.jsx will then change the screen
-          back to RoleSelection.
-        */}
+        {/* ========================================== */}
+        {/* BACK */}
+        {/* ========================================== */}
 
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#716b75] transition hover:bg-white hover:text-[#29252d]"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-[#716b75] transition hover:text-[#29252d]"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={17} />
           Back
         </button>
 
 
-        {/* LUMI logo */}
+        {/* ========================================== */}
+        {/* HEADER */}
+        {/* ========================================== */}
 
-        <div className="text-lg font-semibold tracking-tight">
-          lumi
+        <div className="mb-10">
+
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#92769d]">
+            LUMI CHECK-IN
+          </p>
+
+
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            What's happening right now?
+          </h1>
+
+
+          <p className="mt-4 max-w-xl leading-7 text-[#716b75]">
+            You don't need to explain everything.
+            Just choose what feels closest to your experience.
+          </p>
+
         </div>
 
 
-        {/* Empty space keeps the logo centered */}
+        {/* ========================================== */}
+        {/* EMOTION OPTIONS */}
+        {/* ========================================== */}
 
-        <div className="w-16" />
+        <section className="rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
 
-      </header>
-
-
-
-      {/* ==========================================
-          MAIN CONTENT
-          ========================================== */}
-
-      <section className="mx-auto mt-8 max-w-6xl">
-
-        <div className="grid items-center gap-10 lg:grid-cols-[0.75fr_1.25fr]">
+          <h2 className="text-lg font-semibold">
+            What feels closest?
+          </h2>
 
 
-          {/* ======================================
-              LUMI VISUAL
-              ====================================== */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
 
-          <div className="hidden justify-center lg:flex">
+            {emotions.map((emotion) => {
 
-            <Lumi />
-
-          </div>
+              const isSelected =
+                selectedEmotion === emotion.id
 
 
-
-          {/* ======================================
-              CHECK-IN CONTENT
-              ====================================== */}
-
-          <div>
-
-            {/* Small label */}
-
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-[#8b6d99]">
-              Check-in
-            </p>
-
-
-            {/* Main question */}
-
-            <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-              What's happening right now?
-            </h1>
-
-
-            {/* Explanation */}
-
-            <p className="mt-4 max-w-xl text-base leading-7 text-[#716b75]">
-
-              You don't have to explain everything.
-              Just choose what feels closest right now.
-
-            </p>
-
-
-
-            {/* ======================================
-                EMOTIONAL STATE OPTIONS
-                ====================================== */}
-
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-
-              {/*
-                `.map()` goes through every item in
-                emotionalStates and creates a button.
-
-                Instead of writing 9 buttons manually,
-                React creates them for us.
-
-                This is a very common React pattern.
-              */}
-
-              {emotionalStates.map((state) => (
+              return (
 
                 <button
-                  key={state.id}
-
-                  /*
-                    When the user clicks an option,
-                    we send the selected ID to App.jsx.
-
-                    Example:
-
-                    If the user clicks:
-
-                    "I feel alone"
-
-                    then:
-
-                    onContinue('alone')
-
-                  */
-
-                  onClick={() => onContinue(state.id)}
-
-                  className="group flex items-center justify-between rounded-2xl border border-[#e8e0e9] bg-white px-5 py-4 text-left transition duration-200 hover:-translate-y-0.5 hover:border-[#cdb4db] hover:shadow-md"
+                  key={emotion.id}
+                  onClick={() =>
+                    setSelectedEmotion(emotion.id)
+                  }
+                  className={`
+                    rounded-2xl border p-4 text-left
+                    text-sm font-medium transition
+                    ${
+                      isSelected
+                        ? 'border-[#80668d] bg-[#f4edf7] text-[#5f4c67]'
+                        : 'border-[#e8e0e9] bg-white text-[#514b54] hover:border-[#cbb9d2]'
+                    }
+                  `}
                 >
-
-                  {/* Text */}
-
-                  <span className="text-[15px] font-medium">
-                    {state.label}
-                  </span>
-
-
-                  {/* Arrow */}
-
-                  <ArrowRight
-                    size={17}
-                    className="text-[#aaa2ad] transition group-hover:translate-x-1 group-hover:text-[#80668d]"
-                  />
-
+                  {emotion.label}
                 </button>
 
-              ))}
+              )
 
-            </div>
-
-
-
-            {/* Important explanation */}
-
-            <p className="mt-6 max-w-xl text-xs leading-5 text-[#958d97]">
-
-              Your answer helps LUMI understand what kind of support may fit
-              this moment. It is not a diagnosis.
-
-            </p>
+            })}
 
           </div>
 
-        </div>
+        </section>
 
-      </section>
+
+        {/* ========================================== */}
+        {/* INTENSITY */}
+        {/* ========================================== */}
+
+        <section className="mt-6 rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
+
+          <h2 className="text-lg font-semibold">
+            How heavy does it feel right now?
+          </h2>
+
+
+          <p className="mt-2 text-sm leading-6 text-[#958d97]">
+            Choose a number from 0 to 10.
+            This is your own description of the moment,
+            not a medical measurement.
+          </p>
+
+
+          {/* ---------------------------------------- */}
+          {/* NUMBER BUTTONS */}
+          {/* ---------------------------------------- */}
+
+          <div className="mt-6 grid grid-cols-6 gap-2 sm:grid-cols-11">
+
+            {Array.from(
+              { length: 11 },
+              (_, index) => {
+
+                const isSelected =
+                  selectedIntensity === index
+
+
+                return (
+
+                  <button
+                    key={index}
+                    onClick={() =>
+                      setSelectedIntensity(index)
+                    }
+                    className={`
+                      flex h-11 items-center justify-center
+                      rounded-xl border text-sm font-medium
+                      transition
+                      ${
+                        isSelected
+                          ? 'border-[#80668d] bg-[#80668d] text-white'
+                          : 'border-[#e8e0e9] bg-[#fcf8f5] text-[#716b75] hover:border-[#bda5cb]'
+                      }
+                    `}
+                  >
+                    {index}
+                  </button>
+
+                )
+
+              }
+            )}
+
+          </div>
+
+
+          <div className="mt-3 flex justify-between text-xs text-[#958d97]">
+
+            <span>
+              Very light
+            </span>
+
+            <span>
+              Extremely heavy
+            </span>
+
+          </div>
+
+        </section>
+
+
+        {/* ========================================== */}
+        {/* CONTINUE */}
+        {/* ========================================== */}
+
+        <button
+          onClick={handleContinue}
+          disabled={
+            selectedEmotion === null ||
+            selectedIntensity === null
+          }
+          className={`
+            mt-8 flex w-full items-center
+            justify-center gap-2 rounded-2xl
+            px-6 py-4 text-sm font-semibold
+            transition
+            ${
+              selectedEmotion !== null &&
+              selectedIntensity !== null
+                ? 'bg-[#29252d] text-white hover:bg-[#3b3540]'
+                : 'cursor-not-allowed bg-[#e8e2e8] text-[#aaa2ab]'
+            }
+          `}
+        >
+          Continue
+          <ArrowRight size={17} />
+        </button>
+
+
+      </div>
 
     </main>
+
   )
 }
 
-
-// This allows App.jsx to import CheckIn.
 export default CheckIn
