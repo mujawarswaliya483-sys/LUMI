@@ -62,9 +62,14 @@ import PersonalSupportProfile from './pages/PersonalSupportProfile'
 // ==================================================
 
 import { saveSession } from './utils/sessionStorage'
-
+import { buildPersonalSupportProfile } from './utils/personalization'
 
 function App() {
+
+  console.log(
+  'LUMI Personal Support Profile:',
+  buildPersonalSupportProfile()
+)
 
   // ==================================================
   // CURRENT SCREEN
@@ -174,6 +179,21 @@ function App() {
     whatHelped: '',
   })
 
+  // ==================================================
+// PERSONAL SUPPORT PROFILE
+// ==================================================
+//
+// This stores the personalized profile created from
+// the user's completed LUMI sessions.
+//
+// buildPersonalSupportProfile() reads the sessions
+// saved in localStorage and converts them into useful
+// patterns for the user.
+// ==================================================
+
+const [personalProfile, setPersonalProfile] = useState(
+  () => buildPersonalSupportProfile()
+)
 
   // ==================================================
   // COMPLETE SESSION
@@ -236,7 +256,16 @@ function App() {
 
     saveSession(completedSession)
 
+    // Recalculate the personal profile after the
+// newly completed session has been saved.
+//
+// This means LUMI learns from the latest session
+// immediately instead of waiting for a page refresh.
 
+const updatedProfile =
+  buildPersonalSupportProfile()
+
+setPersonalProfile(updatedProfile)
     // ----------------------------------------------
     // Also keep the same data in React state.
     //
@@ -1366,95 +1395,96 @@ function App() {
 
   if (screen === 'session-complete') {
 
-    return (
-      <SessionComplete
+  return (
+    <SessionComplete
 
-        intensityBefore={
-          sessionData.intensityBefore
-        }
+      intensityBefore={
+        sessionData.intensityBefore
+      }
 
-        intensityAfter={
-          sessionData.intensityAfter
-        }
+      intensityAfter={
+        sessionData.intensityAfter
+      }
 
-        whatHelped={
-          sessionData.whatHelped
-        }
+      whatHelped={
+        sessionData.whatHelped
+      }
 
-        onContinue={() => {
+      onContinue={() => {
 
-          // ------------------------------------------
-          // Reset current session.
-          // ------------------------------------------
+        // ------------------------------------------
+        // Reset current session.
+        // ------------------------------------------
 
-          setCheckInData({
+        setCheckInData({
 
-            emotion: '',
+          emotion: '',
 
-            intensityBefore: null,
+          intensityBefore: null,
 
-          })
-
-
-          setSupportRoute(null)
+        })
 
 
-          setProcessData({
-
-            thought: '',
-
-            feeling: '',
-
-            need: '',
-
-            intensityBefore: null,
-
-            intensityAfter: null,
-
-            whatHelped: '',
-
-            nextStep: '',
-
-          })
+        setSupportRoute(null)
 
 
-          setCalmData({
+        setProcessData({
 
-            intensityBefore: null,
+          thought: '',
 
-            intensityAfter: null,
+          feeling: '',
 
-            whatHelped: '',
+          need: '',
 
-          })
+          intensityBefore: null,
 
+          intensityAfter: null,
 
-          setSessionData({
+          whatHelped: '',
 
-            route: null,
+          nextStep: '',
 
-            interventionCompleted: false,
-
-            intensityBefore: null,
-
-            intensityAfter: null,
-
-            whatHelped: '',
-
-          })
+        })
 
 
-          // Return to Home.
+        setCalmData({
 
-          setScreen('home')
+          intensityBefore: null,
 
-        }}
+          intensityAfter: null,
 
-      />
-    )
-  }
+          whatHelped: '',
+
+        })
 
 
+        setSessionData({
+
+          route: null,
+
+          interventionCompleted: false,
+
+          intensityBefore: null,
+
+          intensityAfter: null,
+
+          whatHelped: '',
+
+        })
+
+
+        // ------------------------------------------
+        // Show Personal Support Profile.
+        // ------------------------------------------
+
+        setScreen('personal-support-profile')
+
+      }}
+
+    />
+  )
+}
+  
   // ==================================================
   // PERSONAL SUPPORT PROFILE
   // ==================================================
@@ -1466,27 +1496,14 @@ function App() {
   // ==================================================
 
   if (screen === 'personal-support-profile') {
-
-    return (
-      <PersonalSupportProfile
-
-        profile={{
-          totalSessions: 0,
-          commonEmotions: [],
-          helpfulSupport: [],
-        }}
-
-        onBack={() =>
-          setScreen('home')
-        }
-
-        onContinue={() =>
-          setScreen('home')
-        }
-
-      />
-    )
-  }
+  return (
+    <PersonalSupportProfile
+      profile={personalProfile}
+      onBack={() => setScreen('home')}
+      onContinue={() => setScreen('home')}
+    />
+  )
+}
 
 
   // ==================================================
