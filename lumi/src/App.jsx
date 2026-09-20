@@ -11,6 +11,7 @@ import CheckIn from './pages/CheckIn'
 import SafetyCheck from './pages/SafetyCheck'
 import SafetySupport from './pages/SafetySupport'
 import NeedDiscovery from './pages/NeedDiscovery'
+import SupportRecommendation from './pages/SupportRecommendation'
 
 // ==================================================
 // CONNECT ROUTE
@@ -52,46 +53,17 @@ import PersonalSupportProfile from './pages/PersonalSupportProfile'
 // ==================================================
 // STORAGE
 // ==================================================
-//
-// saveSession() stores completed LUMI sessions in
-// the browser's localStorage.
-//
-// This is currently only for our frontend prototype.
-// Later this will be replaced by backend/database
-// storage.
-// ==================================================
 
 import { saveSession } from './utils/sessionStorage'
 import { buildPersonalSupportProfile } from './utils/personalization'
 
 function App() {
 
-  console.log(
-  'LUMI Personal Support Profile:',
-  buildPersonalSupportProfile()
-)
-
   // ==================================================
   // CURRENT SCREEN
   // ==================================================
-  //
-  // This is our simple navigation system for now.
-  //
-  // Example:
-  //
-  // screen = "home"
-  //          ↓
-  //        Home
-  //
-  // screen = "check-in"
-  //          ↓
-  //        CheckIn
-  //
-  // Later we can replace this with React Router.
-  // ==================================================
 
   const [screen, setScreen] = useState('home')
-
 
   // ==================================================
   // USER ROLE
@@ -99,18 +71,8 @@ function App() {
 
   const [userRole, setUserRole] = useState(null)
 
-
   // ==================================================
   // CHECK-IN DATA
-  // ==================================================
-  //
-  // This stores the emotional state selected at the
-  // beginning of the session.
-  //
-  // Example:
-  //
-  // emotion = "overthinking"
-  // intensityBefore = 8
   // ==================================================
 
   const [checkInData, setCheckInData] = useState({
@@ -118,22 +80,23 @@ function App() {
     intensityBefore: null,
   })
 
-
   // ==================================================
   // SUPPORT ROUTE
   // ==================================================
-  //
-  // LUMI chooses one of:
-  //
-  // connect
-  // process
-  // calm
-  //
-  // This becomes important for personalization later.
-  // ==================================================
 
   const [supportRoute, setSupportRoute] = useState(null)
+  const [routeSource, setRouteSource] = useState(null)
 
+  // ==================================================
+  // CONNECT DATA
+  // ==================================================
+  //
+  // This stores the Companion selected during CONNECT.
+  //
+  // Later this will come from the backend/database.
+  // ==================================================
+
+  const [selectedCompanion, setSelectedCompanion] = useState(null)
 
   // ==================================================
   // PROCESS DATA
@@ -149,7 +112,6 @@ function App() {
     nextStep: '',
   })
 
-
   // ==================================================
   // CALM DATA
   // ==================================================
@@ -160,15 +122,8 @@ function App() {
     whatHelped: '',
   })
 
-
   // ==================================================
   // COMMON SESSION DATA
-  // ==================================================
-  //
-  // CONNECT, PROCESS and CALM eventually reach the
-  // same completion screen.
-  //
-  // Therefore we keep the final outcome here.
   // ==================================================
 
   const [sessionData, setSessionData] = useState({
@@ -180,42 +135,20 @@ function App() {
   })
 
   // ==================================================
-// PERSONAL SUPPORT PROFILE
-// ==================================================
-//
-// This stores the personalized profile created from
-// the user's completed LUMI sessions.
-//
-// buildPersonalSupportProfile() reads the sessions
-// saved in localStorage and converts them into useful
-// patterns for the user.
-// ==================================================
+  // PERSONAL SUPPORT PROFILE
+  // ==================================================
 
-const [personalProfile, setPersonalProfile] = useState(
-  () => buildPersonalSupportProfile()
-)
+  const [personalProfile, setPersonalProfile] = useState(
+    () => buildPersonalSupportProfile()
+  )
 
   // ==================================================
   // COMPLETE SESSION
   // ==================================================
   //
-  // IMPORTANT:
+  // CONNECT, PROCESS and CALM all use this function.
   //
-  // All three routes use this function:
-  //
-  // CONNECT
-  // PROCESS
-  // CALM
-  //
-  // This prevents us from having three different
-  // storage systems.
-  //
-  // Once the user finishes an intervention:
-  //
-  // 1. Create one completed session object.
-  // 2. Save it to localStorage.
-  // 3. Store it in React state.
-  // 4. Show SessionComplete.
+  // This keeps session saving in one place.
   // ==================================================
 
   const completeSession = ({
@@ -223,58 +156,32 @@ const [personalProfile, setPersonalProfile] = useState(
     whatHelped,
   }) => {
 
-    // ----------------------------------------------
-    // Create the final session object.
-    // ----------------------------------------------
-
     const completedSession = {
-
-      // Emotional state selected at Check-In
       emotion: checkInData.emotion,
 
-      // CONNECT / PROCESS / CALM
       route: supportRoute,
 
-      // User's self-reported intensity before support
+      routeSource,
+
       intensityBefore:
         checkInData.intensityBefore,
 
-      // User's self-reported intensity after support
       intensityAfter,
 
-      // What the user says helped
       whatHelped,
-
     }
 
-
-    // ----------------------------------------------
-    // Save the completed session.
-    //
-    // sessionStorage.js handles localStorage.
-    // ----------------------------------------------
-
+    // Save completed session
     saveSession(completedSession)
 
-    // Recalculate the personal profile after the
-// newly completed session has been saved.
-//
-// This means LUMI learns from the latest session
-// immediately instead of waiting for a page refresh.
+    // Recalculate personalization
+    const updatedProfile =
+      buildPersonalSupportProfile()
 
-const updatedProfile =
-  buildPersonalSupportProfile()
+    setPersonalProfile(updatedProfile)
 
-setPersonalProfile(updatedProfile)
-    // ----------------------------------------------
-    // Also keep the same data in React state.
-    //
-    // React state allows the next screen to display
-    // the data immediately.
-    // ----------------------------------------------
-
+    // Update common session state
     setSessionData((previousData) => ({
-
       ...previousData,
 
       route: supportRoute,
@@ -287,17 +194,11 @@ setPersonalProfile(updatedProfile)
       intensityAfter,
 
       whatHelped,
-
     }))
 
-
-    // ----------------------------------------------
-    // Show the common completion screen.
-    // ----------------------------------------------
-
+    // Move to common completion screen
     setScreen('session-complete')
   }
-
 
   // ==================================================
   // ROLE SELECTION
@@ -312,22 +213,12 @@ setPersonalProfile(updatedProfile)
       role
     )
 
-
-    // ----------------------------------------------
-    // SUPPORT SEEKER
-    // ----------------------------------------------
-
     if (role === 'support-seeker') {
 
       setScreen('check-in')
 
       return
     }
-
-
-    // ----------------------------------------------
-    // COMPANION
-    // ----------------------------------------------
 
     if (role === 'companion') {
 
@@ -338,7 +229,6 @@ setPersonalProfile(updatedProfile)
       return
     }
   }
-
 
   // ==================================================
   // HOME
@@ -355,7 +245,6 @@ setPersonalProfile(updatedProfile)
     )
   }
 
-
   // ==================================================
   // ROLE SELECTION
   // ==================================================
@@ -364,7 +253,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <RoleSelection
-
         onSelectRole={
           handleRoleSelection
         }
@@ -372,11 +260,9 @@ setPersonalProfile(updatedProfile)
         onBack={() =>
           setScreen('home')
         }
-
       />
     )
   }
-
 
   // ==================================================
   // CHECK-IN
@@ -386,7 +272,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <CheckIn
-
         onBack={() =>
           setScreen('role-selection')
         }
@@ -398,24 +283,16 @@ setPersonalProfile(updatedProfile)
             data
           )
 
-
-          // Save emotional state.
-
           setCheckInData({
-
             emotion:
               data.emotion,
 
             intensityBefore:
               data.intensityBefore,
-
           })
 
-
-          // Start a fresh common session.
-
+          // Start fresh session
           setSessionData({
-
             route: null,
 
             interventionCompleted: false,
@@ -426,19 +303,13 @@ setPersonalProfile(updatedProfile)
             intensityAfter: null,
 
             whatHelped: '',
-
           })
-
-
-          // Continue to safety check.
 
           setScreen('safety-check')
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // SAFETY CHECK
@@ -448,7 +319,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <SafetyCheck
-
         onBack={() =>
           setScreen('check-in')
         }
@@ -460,11 +330,7 @@ setPersonalProfile(updatedProfile)
             answer
           )
 
-
-          // ------------------------------------------
-          // SAFE
-          // ------------------------------------------
-
+          // Safe users continue normally
           if (answer === 'safe') {
 
             setScreen('need-discovery')
@@ -472,15 +338,8 @@ setPersonalProfile(updatedProfile)
             return
           }
 
-
-          // ------------------------------------------
-          // UNSURE / IMMEDIATE HELP
-          // ------------------------------------------
-          //
-          // These users do NOT enter random Companion
-          // matching.
-          // ------------------------------------------
-
+          // Higher-risk answers do not enter
+          // random Companion matching.
           if (
             answer === 'unsure' ||
             answer === 'immediate-help'
@@ -490,13 +349,10 @@ setPersonalProfile(updatedProfile)
 
             return
           }
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // SAFETY SUPPORT
@@ -506,32 +362,21 @@ setPersonalProfile(updatedProfile)
 
     return (
       <SafetySupport
-
         onBack={() =>
           setScreen('safety-check')
         }
-
       />
     )
   }
 
-
   // ==================================================
   // NEED DISCOVERY
-  // ==================================================
-  //
-  // This is where LUMI currently routes the user.
-  //
-  // CONNECT
-  // PROCESS
-  // CALM
   // ==================================================
 
   if (screen === 'need-discovery') {
 
     return (
       <NeedDiscovery
-
         onBack={() =>
           setScreen('safety-check')
         }
@@ -543,6 +388,18 @@ setPersonalProfile(updatedProfile)
             need
           )
 
+          // ------------------------------------------
+          // UNKNOWN
+          // ------------------------------------------
+
+          if (need === 'unknown') {
+
+            setScreen(
+              'support-recommendation'
+            )
+
+            return
+          }
 
           // ------------------------------------------
           // CONNECT
@@ -551,21 +408,18 @@ setPersonalProfile(updatedProfile)
           if (need === 'connect') {
 
             setSupportRoute('connect')
+            setRouteSource('direct')
 
             setSessionData((previousData) => ({
-
               ...previousData,
 
               route: 'connect',
-
             }))
-
 
             setScreen('connect')
 
             return
           }
-
 
           // ------------------------------------------
           // PROCESS
@@ -574,22 +428,17 @@ setPersonalProfile(updatedProfile)
           if (need === 'process') {
 
             setSupportRoute('process')
+            setRouteSource('direct')
 
             setSessionData((previousData) => ({
-
               ...previousData,
 
               route: 'process',
-
             }))
 
-
             setProcessData({
-
               thought: '',
-
               feeling: '',
-
               need: '',
 
               intensityBefore:
@@ -600,15 +449,12 @@ setPersonalProfile(updatedProfile)
               whatHelped: '',
 
               nextStep: '',
-
             })
-
 
             setScreen('process-start')
 
             return
           }
-
 
           // ------------------------------------------
           // CALM
@@ -617,17 +463,92 @@ setPersonalProfile(updatedProfile)
           if (need === 'calm') {
 
             setSupportRoute('calm')
+            setRouteSource('direct')
 
             setSessionData((previousData) => ({
-
               ...previousData,
 
               route: 'calm',
-
             }))
 
-
             setCalmData({
+              intensityBefore:
+                checkInData.intensityBefore,
+
+              intensityAfter: null,
+
+              whatHelped: '',
+            })
+
+            setScreen('calm')
+
+            return
+          }
+        }}
+      />
+    )
+  }
+
+  // ==================================================
+  // SUPPORT RECOMMENDATION
+  // ==================================================
+
+  if (screen === 'support-recommendation') {
+
+    return (
+      <SupportRecommendation
+        checkInData={checkInData}
+
+        onBack={() => {
+          setScreen('need-discovery')
+        }}
+
+        onSelectRoute={(route) => {
+
+          setRouteSource('recommended')
+
+          console.log(
+            'Recommended route selected:',
+            route
+          )
+
+          // ------------------------------------------
+          // CONNECT
+          // ------------------------------------------
+
+          if (route === 'connect') {
+
+            setSupportRoute('connect')
+
+            setSessionData((previousData) => ({
+              ...previousData,
+
+              route: 'connect',
+            }))
+
+            setScreen('connect')
+
+            return
+          }
+
+          // ------------------------------------------
+          // PROCESS
+          // ------------------------------------------
+
+          if (route === 'process') {
+
+            setSupportRoute('process')
+
+            setSessionData((previousData) => ({
+              ...previousData,
+
+              route: 'process',
+            }))
+
+            setProcessData({
+              thought: '',
+              feeling: '',
+              need: '',
 
               intensityBefore:
                 checkInData.intensityBefore,
@@ -636,34 +557,45 @@ setPersonalProfile(updatedProfile)
 
               whatHelped: '',
 
+              nextStep: '',
             })
 
+            setScreen('process-start')
+
+            return
+          }
+
+          // ------------------------------------------
+          // CALM
+          // ------------------------------------------
+
+          if (route === 'calm') {
+
+            setSupportRoute('calm')
+
+            setSessionData((previousData) => ({
+              ...previousData,
+
+              route: 'calm',
+            }))
+
+            setCalmData({
+              intensityBefore:
+                checkInData.intensityBefore,
+
+              intensityAfter: null,
+
+              whatHelped: '',
+            })
 
             setScreen('calm')
 
             return
           }
-
-
-          // ------------------------------------------
-          // UNKNOWN
-          // ------------------------------------------
-
-          if (need === 'unknown') {
-
-            console.log(
-              'LUMI will help decide the support route.'
-            )
-
-            return
-          }
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — START
@@ -673,21 +605,16 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessStart
-
         onBack={() =>
           setScreen('need-discovery')
         }
 
         onContinue={() => {
-
           setScreen('process-thought')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — THOUGHT
@@ -697,7 +624,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessThought
-
         onBack={() =>
           setScreen('process-start')
         }
@@ -709,24 +635,17 @@ setPersonalProfile(updatedProfile)
             thought
           )
 
-
           setProcessData((previousData) => ({
-
             ...previousData,
 
             thought,
-
           }))
 
-
           setScreen('process-feeling')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — FEELING
@@ -736,7 +655,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessFeeling
-
         onBack={() =>
           setScreen('process-thought')
         }
@@ -748,24 +666,17 @@ setPersonalProfile(updatedProfile)
             feeling
           )
 
-
           setProcessData((previousData) => ({
-
             ...previousData,
 
             feeling,
-
           }))
 
-
           setScreen('process-need')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — NEED
@@ -775,7 +686,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessNeed
-
         onBack={() =>
           setScreen('process-feeling')
         }
@@ -787,24 +697,17 @@ setPersonalProfile(updatedProfile)
             need
           )
 
-
           setProcessData((previousData) => ({
-
             ...previousData,
 
             need,
-
           }))
 
-
           setScreen('process-summary')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — SUMMARY
@@ -814,7 +717,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessSummary
-
         thought={
           processData.thought
         }
@@ -832,15 +734,11 @@ setPersonalProfile(updatedProfile)
         }
 
         onContinue={() => {
-
           setScreen('process-next-step')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — NEXT STEP
@@ -850,7 +748,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessNextStep
-
         onBack={() =>
           setScreen('process-summary')
         }
@@ -862,27 +759,17 @@ setPersonalProfile(updatedProfile)
             nextStep
           )
 
-
           setProcessData((previousData) => ({
-
             ...previousData,
 
             nextStep,
-
           }))
 
-
-          // For this prototype all PROCESS options
-          // currently lead to the same outcome screen.
-
           setScreen('process-outcome')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // PROCESS — OUTCOME
@@ -892,7 +779,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ProcessOutcome
-
         onBack={() =>
           setScreen('process-next-step')
         }
@@ -904,11 +790,7 @@ setPersonalProfile(updatedProfile)
             outcome
           )
 
-
-          // Save PROCESS outcome.
-
           setProcessData((previousData) => ({
-
             ...previousData,
 
             intensityAfter:
@@ -916,36 +798,19 @@ setPersonalProfile(updatedProfile)
 
             whatHelped:
               outcome.whatHelped,
-
           }))
 
-
-          // ------------------------------------------
-          // IMPORTANT
-          // ------------------------------------------
-          //
-          // Instead of directly going to
-          // SessionComplete, we use completeSession().
-          //
-          // This saves the session to localStorage.
-          // ------------------------------------------
-
           completeSession({
-
             intensityAfter:
               outcome.intensityAfter,
 
             whatHelped:
               outcome.whatHelped,
-
           })
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CALM
@@ -955,21 +820,16 @@ setPersonalProfile(updatedProfile)
 
     return (
       <Calm
-
         onBack={() =>
           setScreen('need-discovery')
         }
 
         onComplete={() => {
-
           setScreen('calm-outcome')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CALM — OUTCOME
@@ -979,7 +839,6 @@ setPersonalProfile(updatedProfile)
 
     return (
       <CalmOutcome
-
         onBack={() =>
           setScreen('calm')
         }
@@ -991,11 +850,7 @@ setPersonalProfile(updatedProfile)
             outcome
           )
 
-
-          // Save CALM outcome in its own state too.
-
           setCalmData((previousData) => ({
-
             ...previousData,
 
             intensityAfter:
@@ -1003,28 +858,19 @@ setPersonalProfile(updatedProfile)
 
             whatHelped:
               outcome.whatHelped,
-
           }))
 
-
-          // Save common completed session.
-
           completeSession({
-
             intensityAfter:
               outcome.intensityAfter,
 
             whatHelped:
               outcome.whatHelped,
-
           })
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CONNECT
@@ -1034,29 +880,26 @@ setPersonalProfile(updatedProfile)
 
     return (
       <Connect
-
         onBack={() =>
           setScreen('need-discovery')
         }
 
-        onContinue={() => {
+        onContinue={(companion) => {
 
           console.log(
-            'Connection request prepared.'
+            'Selected Companion:',
+            companion
           )
 
+          // Store the selected Companion
+          setSelectedCompanion(companion)
 
-          // Mutual consent is required before
-          // opening the conversation.
-
+          // Continue to consent
           setScreen('connection-consent')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CONNECTION CONSENT
@@ -1066,222 +909,57 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ConnectionConsent
+        companionId={
+          selectedCompanion?.id
+        }
 
         onBack={() =>
           setScreen('connect')
         }
 
-        onAccept={() => {
+        onContinue={(companionId) => {
 
           console.log(
-            'Support Seeker accepted connection.'
+            'Connection request sent for:',
+            companionId
           )
-
-
-          // Temporary frontend simulation.
-          //
-          // Later this will be controlled by the
-          // backend and Companion account.
 
           setScreen('companion-request')
-
         }}
-
-        onDecline={() => {
-
-          console.log(
-            'Support Seeker cancelled connection.'
-          )
-
-
-          setScreen('need-discovery')
-
-        }}
-
       />
     )
   }
-
-
-  // ==================================================
-  // CONNECTION PENDING
-  // ==================================================
-
-  if (screen === 'connection-pending') {
-
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
-
-        <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
-
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
-
-            <Check size={25} />
-
-          </div>
-
-          <h1 className="mt-6 text-3xl font-semibold">
-            Request sent
-          </h1>
-
-          <p className="mt-4 leading-7 text-[#716b75]">
-            The Companion has been asked whether they
-            would like to connect.
-          </p>
-
-          <p className="mt-4 text-sm leading-6 text-[#958d97]">
-            LUMI only creates a conversation after both
-            people agree.
-          </p>
-
-          <button
-            onClick={() =>
-              setScreen('need-discovery')
-            }
-            className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
-          >
-            Back to support options
-          </button>
-
-        </div>
-
-      </main>
-    )
-  }
-
 
   // ==================================================
   // COMPANION REQUEST
   // ==================================================
+if (screen === 'companion-request') {
 
-  if (screen === 'companion-request') {
+  return (
+    <CompanionRequest
 
-    return (
-      <CompanionRequest
+      companionId={
+        selectedCompanion?.id
+      }
 
-        onBack={() =>
-          setScreen('home')
-        }
+      onBack={() =>
+        setScreen('connection-consent')
+      }
 
-        onAccept={() => {
+      onContinue={(companionId) => {
 
-          console.log(
-            'Companion accepted connection.'
-          )
+        console.log(
+          'Companion accepted connection:',
+          companionId
+        )
 
+        setScreen('chat')
 
-          setScreen(
-            'connection-established'
-          )
+      }}
 
-        }}
-
-        onDecline={() => {
-
-          console.log(
-            'Companion declined connection.'
-          )
-
-
-          setScreen(
-            'connection-declined'
-          )
-
-        }}
-
-      />
-    )
-  }
-
-
-  // ==================================================
-  // CONNECTION ESTABLISHED
-  // ==================================================
-
-  if (screen === 'connection-established') {
-
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
-
-        <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
-
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#e6f1ed] text-[#54786b]">
-
-            <Check size={26} />
-
-          </div>
-
-          <h1 className="mt-6 text-3xl font-semibold">
-            Connection established
-          </h1>
-
-          <p className="mt-4 leading-7 text-[#716b75]">
-            Both people agreed to connect.
-            You can now start a protected LUMI conversation.
-          </p>
-
-          <button
-            onClick={() =>
-              setScreen('chat')
-            }
-            className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
-          >
-            Open conversation
-          </button>
-
-        </div>
-
-      </main>
-    )
-  }
-
-
-  // ==================================================
-  // CONNECTION DECLINED
-  // ==================================================
-
-  if (screen === 'connection-declined') {
-
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 text-[#29252d]">
-
-        <div className="max-w-xl rounded-3xl border border-[#e8e0e9] bg-white p-8 text-center shadow-sm">
-
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
-
-            <X size={25} />
-
-          </div>
-
-          <h1 className="mt-6 text-3xl font-semibold">
-            Request declined
-          </h1>
-
-          <p className="mt-4 leading-7 text-[#716b75]">
-            That's okay. A Companion can decline whenever
-            they don't feel comfortable or available.
-          </p>
-
-          <p className="mt-4 text-sm leading-6 text-[#958d97]">
-            LUMI can offer another suitable Companion or
-            another support route such as PROCESS or CALM.
-          </p>
-
-          <button
-            onClick={() =>
-              setScreen('need-discovery')
-            }
-            className="mt-7 rounded-2xl bg-[#29252d] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#3b3540]"
-          >
-            Choose another support option
-          </button>
-
-        </div>
-
-      </main>
-    )
-  }
-
+    />
+  )
+}
 
   // ==================================================
   // CHAT
@@ -1291,26 +969,26 @@ setPersonalProfile(updatedProfile)
 
     return (
       <Chat
-
-        onBack={() =>
-          setScreen('connection-established')
+        companionId={
+          selectedCompanion?.id
         }
 
-        onLeave={() => {
+        onBack={() =>
+          setScreen('companion-request')
+        }
+
+        onContinue={(chatData) => {
 
           console.log(
-            'User left the conversation.'
+            'Conversation ended:',
+            chatData
           )
 
-
           setScreen('conversation-ended')
-
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CONVERSATION ENDED
@@ -1320,17 +998,19 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ConversationEnded
+        onBack={() =>
+          setScreen('chat')
+        }
 
         onContinue={() => {
 
-          setScreen('connect-outcome')
-
+          setScreen(
+            'connect-outcome'
+          )
         }}
-
       />
     )
   }
-
 
   // ==================================================
   // CONNECT — OUTCOME
@@ -1340,6 +1020,9 @@ setPersonalProfile(updatedProfile)
 
     return (
       <ConnectOutcome
+        intensityBefore={
+          checkInData.intensityBefore
+        }
 
         onBack={() =>
           setScreen('conversation-ended')
@@ -1352,159 +1035,114 @@ setPersonalProfile(updatedProfile)
             data
           )
 
-
-          // ------------------------------------------
-          // Save CONNECT session.
-          //
-          // completeSession() handles:
-          //
-          // 1. localStorage
-          // 2. React session state
-          // 3. navigation
-          // ------------------------------------------
-
           completeSession({
-
             intensityAfter:
               data.intensityAfter,
 
             whatHelped:
               data.whatHelped,
-
           })
-
         }}
-
       />
     )
   }
 
-
   // ==================================================
   // SESSION COMPLETE
-  // ==================================================
-  //
-  // All three routes now arrive here:
-  //
-  // CONNECT
-  // PROCESS
-  // CALM
-  //
-  // And all three use sessionData.
   // ==================================================
 
   if (screen === 'session-complete') {
 
-  return (
-    <SessionComplete
+    return (
+      <SessionComplete
+        intensityBefore={
+          sessionData.intensityBefore
+        }
 
-      intensityBefore={
-        sessionData.intensityBefore
-      }
+        intensityAfter={
+          sessionData.intensityAfter
+        }
 
-      intensityAfter={
-        sessionData.intensityAfter
-      }
+        whatHelped={
+          sessionData.whatHelped
+        }
 
-      whatHelped={
-        sessionData.whatHelped
-      }
+        routeSource={
+          routeSource
+        }
 
-      onContinue={() => {
+        onContinue={() => {
 
-        // ------------------------------------------
-        // Reset current session.
-        // ------------------------------------------
+          // ------------------------------------------
+          // Reset current session
+          // ------------------------------------------
 
-        setCheckInData({
+          setCheckInData({
+            emotion: '',
+            intensityBefore: null,
+          })
 
-          emotion: '',
+          setSupportRoute(null)
 
-          intensityBefore: null,
+          setRouteSource(null)
 
-        })
+          setSelectedCompanion(null)
 
+          setProcessData({
+            thought: '',
+            feeling: '',
+            need: '',
+            intensityBefore: null,
+            intensityAfter: null,
+            whatHelped: '',
+            nextStep: '',
+          })
 
-        setSupportRoute(null)
+          setCalmData({
+            intensityBefore: null,
+            intensityAfter: null,
+            whatHelped: '',
+          })
 
+          setSessionData({
+            route: null,
+            interventionCompleted: false,
+            intensityBefore: null,
+            intensityAfter: null,
+            whatHelped: '',
+          })
 
-        setProcessData({
+          // Show updated personal profile
+          setScreen(
+            'personal-support-profile'
+          )
+        }}
+      />
+    )
+  }
 
-          thought: '',
-
-          feeling: '',
-
-          need: '',
-
-          intensityBefore: null,
-
-          intensityAfter: null,
-
-          whatHelped: '',
-
-          nextStep: '',
-
-        })
-
-
-        setCalmData({
-
-          intensityBefore: null,
-
-          intensityAfter: null,
-
-          whatHelped: '',
-
-        })
-
-
-        setSessionData({
-
-          route: null,
-
-          interventionCompleted: false,
-
-          intensityBefore: null,
-
-          intensityAfter: null,
-
-          whatHelped: '',
-
-        })
-
-
-        // ------------------------------------------
-        // Show Personal Support Profile.
-        // ------------------------------------------
-
-        setScreen('personal-support-profile')
-
-      }}
-
-    />
-  )
-}
-  
   // ==================================================
   // PERSONAL SUPPORT PROFILE
   // ==================================================
-  //
-  // This screen exists already.
-  //
-  // We will connect it to getSessions() in the next
-  // personalization step.
-  // ==================================================
 
   if (screen === 'personal-support-profile') {
-  return (
-    <PersonalSupportProfile
-      profile={personalProfile}
-      onBack={() => setScreen('home')}
-      onContinue={() => setScreen('home')}
-    />
-  )
-}
 
+    return (
+      <PersonalSupportProfile
+        profile={
+          personalProfile
+        }
+
+        onBack={() =>
+          setScreen('home')
+        }
+
+        onContinue={() =>
+          setScreen('home')
+        }
+      />
+    )
+  }
 
   // ==================================================
   // FALLBACK
@@ -1512,6 +1150,5 @@ setPersonalProfile(updatedProfile)
 
   return null
 }
-
 
 export default App

@@ -1,13 +1,28 @@
-import { ArrowLeft, ArrowRight, Heart, Brain, Sparkles, HelpCircle } from 'lucide-react'
-import Lumi from '../components/Lumi'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  Brain,
+  Sparkles,
+  HelpCircle,
+} from 'lucide-react'
 
-// These are the four support needs LUMI currently understands.
+import Lumi from '../components/Lumi'
+import { getPersonalizedSuggestion } from '../utils/personalization'
+
+
+// ==================================================
+// SUPPORT NEEDS
+// ==================================================
 //
-// IMPORTANT:
 // These are NOT medical diagnoses.
-// They simply describe what kind of support
+//
+// They describe what kind of support
 // the person wants at this moment.
+// ==================================================
+
 const supportNeeds = [
+
   {
     id: 'connect',
     title: 'I want to be heard',
@@ -15,6 +30,7 @@ const supportNeeds = [
       'I want someone who understands what I am going through.',
     icon: Heart,
   },
+
   {
     id: 'process',
     title: 'I want to make sense of it',
@@ -22,6 +38,7 @@ const supportNeeds = [
       'I want to understand what keeps coming back in my mind.',
     icon: Brain,
   },
+
   {
     id: 'calm',
     title: 'I just want to feel a little better',
@@ -29,6 +46,7 @@ const supportNeeds = [
       'I do not want to explain everything. I just need a calmer moment.',
     icon: Sparkles,
   },
+
   {
     id: 'unknown',
     title: "I don't know yet",
@@ -36,21 +54,68 @@ const supportNeeds = [
       'I am not sure what I need. Help me figure it out.',
     icon: HelpCircle,
   },
+
 ]
 
 
-// Props received from App.jsx:
-//
-// onBack
-// → takes the user back to Safety Check.
-//
-// onSelectNeed
-// → sends the user's selected support need
-//   back to App.jsx.
-function NeedDiscovery({ onBack, onSelectNeed }) {
+// ==================================================
+// COMPONENT
+// ==================================================
+
+function NeedDiscovery({
+  onBack,
+  onSelectNeed,
+}) {
+
+
+  // ==================================================
+  // PERSONALIZATION
+  // ==================================================
+  //
+  // This looks at previous completed sessions.
+  //
+  // IMPORTANT:
+  //
+  // This does NOT automatically choose a route.
+  //
+  // The user always remains in control.
+  // ==================================================
+
+  const personalizedSuggestion =
+    getPersonalizedSuggestion()
+
+
+  // ==================================================
+  // CONVERT HELPFUL-SUPPORT IDs INTO HUMAN LANGUAGE
+  // ==================================================
+
+  const helpfulLabels = {
+
+    understood:
+      'being understood',
+
+    'sorting-thoughts':
+      'sorting your thoughts',
+
+    'calming-down':
+      'calming down',
+
+    'having-space':
+      'having some space',
+
+    'next-step':
+      'having a next step',
+
+    'something-else':
+      'something else',
+
+  }
+
 
   return (
+
     <main className="min-h-screen bg-[#fcf8f5] px-5 py-6 text-[#29252d]">
+
 
       {/* ==================================================
           HEADER
@@ -62,15 +127,21 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
           onClick={onBack}
           className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#716b75] transition hover:bg-white hover:text-[#29252d]"
         >
+
           <ArrowLeft size={18} />
+
           Back
+
         </button>
+
 
         <div className="text-lg font-semibold tracking-tight">
           lumi
         </div>
 
+
         {/* Empty space keeps the logo centered */}
+
         <div className="w-16" />
 
       </header>
@@ -90,7 +161,9 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
               ================================================== */}
 
           <div className="hidden justify-center lg:flex">
+
             <Lumi />
+
           </div>
 
 
@@ -99,6 +172,7 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
               ================================================== */}
 
           <div>
+
 
             <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-[#8b6d99]">
               Finding the right support
@@ -117,6 +191,60 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
 
 
             {/* ==================================================
+                PERSONALIZED INSIGHT
+                ================================================== */}
+
+            {personalizedSuggestion && (
+
+              <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[#e8e0e9] bg-[#f8f3fa] p-4">
+
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white">
+
+                  <Sparkles
+                    size={17}
+                    className="text-[#80668d]"
+                  />
+
+                </div>
+
+
+                <div>
+
+                  <p className="text-sm font-semibold text-[#514b54]">
+                    A small reminder from your previous sessions
+                  </p>
+
+
+                  <p className="mt-1 text-sm leading-6 text-[#716b75]">
+
+                    {helpfulLabels[
+                      personalizedSuggestion.value
+                    ]
+                      ? `You've found ${
+                          helpfulLabels[
+                            personalizedSuggestion.value
+                          ]
+                        } helpful before.`
+                      : `You've found ${
+                          personalizedSuggestion.value
+                        } helpful before.`
+                    }
+
+                  </p>
+
+
+                  <p className="mt-1 text-xs leading-5 text-[#958d97]">
+                    This is only a suggestion. You choose what feels right now.
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+
+            {/* ==================================================
                 SUPPORT OPTIONS
                 ================================================== */}
 
@@ -124,24 +252,25 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
 
               {supportNeeds.map((need) => {
 
+
                 // Each option contains its own icon component.
-                //
-                // Example:
-                // need.icon = Heart
-                // need.icon = Brain
-                //
-                // We store the component in a variable so
-                // we can render it below.
+
                 const Icon = need.icon
 
+
                 return (
+
                   <button
                     key={need.id}
-                    onClick={() => onSelectNeed(need.id)}
+                    onClick={() =>
+                      onSelectNeed(need.id)
+                    }
                     className="group flex w-full items-center gap-5 rounded-3xl border border-[#e8e0e9] bg-white p-5 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#cdb4db] hover:shadow-md sm:p-6"
                   >
 
+
                     {/* Icon container */}
+
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
 
                       <Icon size={21} />
@@ -150,11 +279,13 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
 
 
                     {/* Text */}
+
                     <div className="min-w-0 flex-1">
 
                       <h2 className="text-base font-semibold sm:text-lg">
                         {need.title}
                       </h2>
+
 
                       <p className="mt-1 text-sm leading-6 text-[#7c747f]">
                         {need.description}
@@ -164,24 +295,33 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
 
 
                     {/* Arrow */}
+
                     <ArrowRight
                       size={19}
                       className="shrink-0 text-[#aaa2ad] transition group-hover:translate-x-1 group-hover:text-[#80668d]"
                     />
 
                   </button>
+
                 )
+
               })}
 
             </div>
 
 
-            {/* Explanation */}
+            {/* ==================================================
+                EXPLANATION
+                ================================================== */}
+
             <p className="mt-6 max-w-xl text-xs leading-5 text-[#958d97]">
+
               LUMI uses your choice together with your check-in,
-              preferences, and later feedback to decide what support
-              may fit you best.
+              preferences, and later feedback to understand what
+              support may fit you best.
+
             </p>
+
 
           </div>
 
@@ -190,7 +330,9 @@ function NeedDiscovery({ onBack, onSelectNeed }) {
       </section>
 
     </main>
+
   )
 }
+
 
 export default NeedDiscovery

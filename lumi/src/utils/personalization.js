@@ -15,42 +15,11 @@ import { getSessions } from './sessionStorage'
 // It only summarizes what the user has reported
 // during their own LUMI sessions.
 //
-// Example:
-//
-// User completes 5 sessions:
-//
-// overthinking → PROCESS → sorting thoughts helped
-// alone       → CONNECT → being understood helped
-// stressed    → CALM    → calming helped
-//
-// LUMI can then show:
-//
-// Common emotional states:
-// - overthinking
-// - feeling alone
-//
-// Helpful support:
-// - sorting thoughts
-// - being understood
-//
 // ==================================================
 
 
+// ==================================================
 // COUNT FREQUENCY
-// ==================================================
-//
-// Example:
-//
-// ["alone", "alone", "stressed", "alone"]
-//
-// becomes:
-//
-// {
-//   alone: 3,
-//   stressed: 1
-// }
-//
-// This helps us discover repeated patterns.
 // ==================================================
 
 function countFrequency(items) {
@@ -58,8 +27,6 @@ function countFrequency(items) {
   const counts = {}
 
   items.forEach((item) => {
-
-    // Ignore empty values.
 
     if (!item) {
       return
@@ -75,23 +42,6 @@ function countFrequency(items) {
 
 // ==================================================
 // SORT BY FREQUENCY
-// ==================================================
-//
-// Converts:
-//
-// {
-//   alone: 3,
-//   stressed: 1,
-//   overthinking: 2
-// }
-//
-// into:
-//
-// [
-//   { value: "alone", count: 3 },
-//   { value: "overthinking", count: 2 },
-//   { value: "stressed", count: 1 }
-// ]
 // ==================================================
 
 function sortByFrequency(counts) {
@@ -112,25 +62,14 @@ function sortByFrequency(counts) {
 // ==================================================
 // BUILD PERSONAL SUPPORT PROFILE
 // ==================================================
-//
-// This is the main function.
-//
-// It reads all completed sessions and creates a
-// simple profile that the UI can understand.
-// ==================================================
 
 export function buildPersonalSupportProfile() {
-
-  // ----------------------------------------------
-  // Get all sessions saved in localStorage.
-  // ----------------------------------------------
 
   const sessions = getSessions()
 
 
   // ----------------------------------------------
-  // If the user has never completed a session,
-  // return an empty profile.
+  // No previous sessions.
   // ----------------------------------------------
 
   if (sessions.length === 0) {
@@ -145,6 +84,10 @@ export function buildPersonalSupportProfile() {
 
       commonRoutes: [],
 
+      recommendedRoutesUsed: [],
+
+      effectiveRoutes: [],
+
       averageIntensityBefore: null,
 
       averageIntensityAfter: null,
@@ -154,7 +97,6 @@ export function buildPersonalSupportProfile() {
     }
   }
 
-  
 
   // ==================================================
   // EMOTIONAL PATTERNS
@@ -207,13 +149,31 @@ export function buildPersonalSupportProfile() {
 
 
   // ==================================================
-  // INTENSITY
+  // RECOMMENDED ROUTES USED
   // ==================================================
-  //
-  // We calculate averages from the user's own
-  // self-reported 0–10 ratings.
-  //
-  // These are NOT medical measurements.
+
+  const recommendedRoutes =
+    sessions
+      .filter(
+        (session) =>
+          session.routeSource === 'recommended'
+      )
+      .map(
+        (session) =>
+          session.route
+      )
+
+  const recommendedRouteCounts =
+    countFrequency(recommendedRoutes)
+
+  const recommendedRoutesUsed =
+    sortByFrequency(
+      recommendedRouteCounts
+    )
+
+
+  // ==================================================
+  // INTENSITY
   // ==================================================
 
   const sessionsWithBefore =
@@ -250,19 +210,7 @@ export function buildPersonalSupportProfile() {
 
 
   // ==================================================
-  // AVERAGE SELF-REPORTED CHANGE
-  // ==================================================
-  //
-  // Positive value:
-  //
-  // before > after
-  //
-  // Negative value:
-  //
-  // after > before
-  //
-  // Again, this describes self-reported session
-  // changes. It does NOT establish clinical efficacy.
+  // SESSION-BY-SESSION CHANGE
   // ==================================================
 
   const sessionsWithBoth =
@@ -288,10 +236,42 @@ export function buildPersonalSupportProfile() {
 
 
   // ==================================================
+  // EFFECTIVE SUPPORT ROUTES
+  // ==================================================
+  //
+  // This does NOT mean the route is medically
+  // effective.
+  //
+  // It only means the user reported lower intensity
+  // after those particular sessions.
+  // ==================================================
+
+  const effectiveRoutes =
+    sessionsWithBoth
+      .filter(
+        (session) =>
+          session.intensityAfter <
+          session.intensityBefore
+      )
+      .map(
+        (session) =>
+          session.route
+      )
+
+  const effectiveRouteCounts =
+    countFrequency(effectiveRoutes)
+
+  const effectiveRoutesSorted =
+    sortByFrequency(
+      effectiveRouteCounts
+    )
+
+
+  // ==================================================
   // RETURN PERSONAL PROFILE
   // ==================================================
 
-    return {
+  return {
 
     totalSessions:
       sessions.length,
@@ -301,6 +281,11 @@ export function buildPersonalSupportProfile() {
     helpfulSupport,
 
     commonRoutes,
+
+    recommendedRoutesUsed,
+
+    effectiveRoutes:
+      effectiveRoutesSorted,
 
     averageIntensityBefore,
 
@@ -312,24 +297,114 @@ export function buildPersonalSupportProfile() {
 }
 
 
+// ==================================================
+// GET PERSONALIZED SUGGESTION
+// ==================================================
+//
+// Priority:
+//
+// 1. What the user explicitly said helped.
+// 2. Routes where self-reported intensity decreased.
+//
+// This does NOT automatically force a route.
+// ==================================================
+
 export function getPersonalizedSuggestion() {
 
-  const profile = buildPersonalSupportProfile()
+  const profile =
+    buildPersonalSupportProfile()
+
+
+  // ----------------------------------------------
+  // No previous sessions.
+  // ----------------------------------------------
 
   if (profile.totalSessions === 0) {
     return null
   }
 
-  if (profile.helpfulSupport.length === 0) {
-    return null
+
+  // ==================================================
+  // PRIORITY 1:
+  // USER'S EXPLICIT HELPFUL FEEDBACK
+  // ==================================================
+
+  if (
+    profile.helpfulSupport.length > 0
+  ) {
+
+    // FIX:
+    // Get the most frequently reported helpful
+    // support option before using it below.
+
+    const mostHelpful =
+      profile.helpfulSupport[0]
+
+
+    const mostEffective =
+      profile.effectiveRoutes.length > 0
+        ? profile.effectiveRoutes[0]
+        : null
+
+
+    return {
+
+      type:
+        'helpful-support',
+
+      value:
+        mostHelpful.value,
+
+      count:
+        mostHelpful.count,
+
+      effectiveRoute:
+        mostEffective?.value || null,
+
+      effectiveRouteCount:
+        mostEffective?.count || 0,
+
+    }
   }
 
-  const mostHelpful =
-    profile.helpfulSupport[0]
 
-  return {
-    type: 'helpful-support',
-    value: mostHelpful.value,
-    count: mostHelpful.count,
+  // ==================================================
+  // PRIORITY 2:
+  // EFFECTIVE ROUTE
+  // ==================================================
+
+  if (
+    profile.effectiveRoutes.length > 0
+  ) {
+
+    const mostEffectiveRoute =
+      profile.effectiveRoutes[0]
+
+
+    return {
+
+      type:
+        'effective-route',
+
+      value:
+        mostEffectiveRoute.value,
+
+      count:
+        mostEffectiveRoute.count,
+
+      effectiveRoute:
+        mostEffectiveRoute.value,
+
+      effectiveRouteCount:
+        mostEffectiveRoute.count,
+
+    }
   }
+
+
+  // ----------------------------------------------
+  // No useful personalization signal yet.
+  // ----------------------------------------------
+
+  return null
 }

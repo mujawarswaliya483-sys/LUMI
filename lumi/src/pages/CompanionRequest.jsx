@@ -1,296 +1,252 @@
 import {
   ArrowLeft,
-  Check,
+  ArrowRight,
+  CheckCircle2,
   Clock3,
+  Heart,
   ShieldCheck,
   UserRound,
-  X,
 } from 'lucide-react'
-
 import Lumi from '../components/Lumi'
 
-// --------------------------------------------------
-// TEMPORARY REQUEST DATA
-// --------------------------------------------------
-//
-// This is currently fake frontend data.
-//
-// Later this information will come from MongoDB
-// through our Express backend.
-//
-// We intentionally don't reveal sensitive information.
-// The Companion only receives information that is
-// necessary for deciding whether they are comfortable
-// accepting the connection.
-//
-const request = {
-  requesterName: 'LUMI Member',
-  experience: 'Currently feeling alone',
-  supportNeed: 'Wants to be heard',
-  connectionType: 'Listening',
-}
+function CompanionRequest({
+  companionId,
+  onBack,
+  onContinue,
+}) {
+  const handleContinue = () => {
+    if (!companionId) return
 
-function CompanionRequest({ onBack, onAccept, onDecline }) {
+    onContinue(companionId)
+  }
+
   return (
-    <main className="min-h-screen bg-[#fcf8f5] px-5 py-6 text-[#29252d]">
+    <div className="min-h-screen bg-[#fcf8f5] px-5 py-8 text-[#29252d]">
+      <div className="mx-auto max-w-3xl">
 
-      {/* ------------------------------------------------
-          HEADER
-      ------------------------------------------------ */}
+        {/* Top navigation */}
+        <div className="mb-8 flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#6f6575] transition hover:bg-white"
+          >
+            <ArrowLeft size={18} />
+            Back
+          </button>
 
-      <header className="mx-auto flex max-w-6xl items-center justify-between">
-
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#716b75] transition hover:bg-white hover:text-[#29252d]"
-        >
-          <ArrowLeft size={18} />
-          Back
-        </button>
-
-        <div className="text-lg font-semibold tracking-tight">
-          lumi
+          <div className="text-sm font-medium text-[#8a7d91]">
+            CONNECTION REQUEST
+          </div>
         </div>
 
-        <div className="w-16" />
-
-      </header>
-
-
-      {/* ------------------------------------------------
-          MAIN CONTENT
-      ------------------------------------------------ */}
-
-      <section className="mx-auto mt-8 max-w-6xl">
-
-        <div className="grid items-center gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+        {/* Main card */}
+        <div className="rounded-[2rem] border border-[#e8dfe9] bg-white p-6 shadow-[0_20px_50px_rgba(90,65,100,0.06)] sm:p-9">
 
           {/* Lumi */}
-          <div className="hidden justify-center lg:flex">
+          <div className="flex justify-center">
             <Lumi />
           </div>
 
+          <div className="-mt-2 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eee3f2]">
+              <CheckCircle2
+                size={25}
+                className="text-[#80678b]"
+              />
+            </div>
 
-          {/* Request content */}
-          <div>
-
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-[#8b6d99]">
-              Companion request
-            </p>
-
-
-            <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-              Someone is asking to connect.
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight">
+              Your request is ready
             </h1>
 
-
-            <p className="mt-4 max-w-xl text-base leading-7 text-[#716b75]">
-              You can choose whether you feel comfortable being
-              there for this person right now.
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#756d78]">
+              The companion will only see that someone looking for
+              support would like to connect. You can decide what
+              you want to share once the connection begins.
             </p>
+          </div>
 
+          {/* Companion preview */}
+          <div className="mt-8 rounded-3xl border border-[#e8dfe9] bg-[#faf7fb] p-5">
 
-            {/* ------------------------------------------------
-                REQUEST CARD
-            ------------------------------------------------ */}
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eee3f2]">
+                <UserRound
+                  size={22}
+                  className="text-[#80678b]"
+                />
+              </div>
 
-            <div className="mt-8 rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-7">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-[#96879c]">
+                  Your selected companion
+                </p>
 
-              {/* Anonymous user */}
-              <div className="flex items-start gap-4">
+                <h2 className="mt-1 font-medium">
+                  LUMI Companion
+                </h2>
+              </div>
+            </div>
 
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#f1e7f5] text-[#80668d]">
-                  <UserRound size={24} />
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+
+              <div className="rounded-2xl bg-white p-4">
+                <div className="flex items-center gap-2">
+                  <Heart
+                    size={16}
+                    className="text-[#80678b]"
+                  />
+
+                  <span className="text-sm font-medium">
+                    Shared experience
+                  </span>
                 </div>
 
+                <p className="mt-2 text-xs leading-5 text-[#817783]">
+                  The companion has opted into supporting someone
+                  with a potentially similar experience.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white p-4">
+                <div className="flex items-center gap-2">
+                  <Clock3
+                    size={16}
+                    className="text-[#80678b]"
+                  />
+
+                  <span className="text-sm font-medium">
+                    Available now
+                  </span>
+                </div>
+
+                <p className="mt-2 text-xs leading-5 text-[#817783]">
+                  The companion is currently marked as available
+                  for a connection.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* What happens next */}
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-[#554b59]">
+              What happens next?
+            </h3>
+
+            <div className="mt-4 space-y-3">
+
+              <div className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eee3f2] text-xs font-semibold text-[#80678b]">
+                  1
+                </div>
 
                 <div>
-
-                  <h2 className="font-semibold">
-                    {request.requesterName}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-[#8a828d]">
-                    Anonymous LUMI member
+                  <p className="text-sm font-medium">
+                    Send the connection request
                   </p>
 
+                  <p className="mt-1 text-xs leading-5 text-[#817783]">
+                    Your request is sent without exposing unnecessary
+                    personal information.
+                  </p>
                 </div>
-
               </div>
 
-
-              {/* ------------------------------------------------
-                  WHAT THE COMPANION KNOWS
-              ------------------------------------------------ */}
-
-              <div className="mt-7">
-
-                <h3 className="text-sm font-semibold">
-                  What they shared
-                </h3>
-
-
-                <div className="mt-4 space-y-3">
-
-                  <div className="rounded-2xl bg-[#fcf8f5] p-4">
-
-                    <p className="text-xs uppercase tracking-[0.12em] text-[#958d97]">
-                      Right now
-                    </p>
-
-                    <p className="mt-1 text-sm font-medium">
-                      {request.experience}
-                    </p>
-
-                  </div>
-
-
-                  <div className="rounded-2xl bg-[#fcf8f5] p-4">
-
-                    <p className="text-xs uppercase tracking-[0.12em] text-[#958d97]">
-                      They need
-                    </p>
-
-                    <p className="mt-1 text-sm font-medium">
-                      {request.supportNeed}
-                    </p>
-
-                  </div>
-
-
-                  <div className="rounded-2xl bg-[#fcf8f5] p-4">
-
-                    <p className="text-xs uppercase tracking-[0.12em] text-[#958d97]">
-                      Connection style
-                    </p>
-
-                    <p className="mt-1 text-sm font-medium">
-                      {request.connectionType}
-                    </p>
-
-                  </div>
-
+              <div className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eee3f2] text-xs font-semibold text-[#80678b]">
+                  2
                 </div>
 
+                <div>
+                  <p className="text-sm font-medium">
+                    Wait for mutual acceptance
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-[#817783]">
+                    The conversation does not begin unless the
+                    connection is accepted.
+                  </p>
+                </div>
               </div>
 
-
-              {/* ------------------------------------------------
-                  COMPANION BOUNDARY
-              ------------------------------------------------ */}
-
-              <div className="mt-7 rounded-2xl bg-[#f8f4fa] p-4">
-
-                <div className="flex items-start gap-3">
-
-                  <ShieldCheck
-                    size={19}
-                    className="mt-0.5 shrink-0 text-[#80668d]"
-                  />
-
-                  <div>
-
-                    <p className="text-sm font-medium">
-                      Remember your role
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-[#7c747f]">
-                      You are here to listen and share your own
-                      experience. You are not expected to diagnose,
-                      treat, or solve someone's mental health.
-                    </p>
-
-                  </div>
-
+              <div className="flex gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eee3f2] text-xs font-semibold text-[#80678b]">
+                  3
                 </div>
 
-              </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    Start a supported conversation
+                  </p>
 
-
-              {/* ------------------------------------------------
-                  SAFETY INFORMATION
-              ------------------------------------------------ */}
-
-              <div className="mt-4 rounded-2xl border border-[#eee7ef] bg-[#fcf8f5] p-4">
-
-                <div className="flex items-start gap-3">
-
-                  <Clock3
-                    size={18}
-                    className="mt-0.5 shrink-0 text-[#80668d]"
-                  />
-
-                  <div>
-
-                    <p className="text-sm font-medium">
-                      You stay in control
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-[#7c747f]">
-                      You can decline this request or leave the
-                      conversation later. You never need to exchange
-                      personal contact information.
-                    </p>
-
-                  </div>
-
+                  <p className="mt-1 text-xs leading-5 text-[#817783]">
+                    If accepted, you can talk while keeping control
+                    over what you choose to share.
+                  </p>
                 </div>
-
-              </div>
-
-
-              {/* ------------------------------------------------
-                  ACCEPT / DECLINE
-              ------------------------------------------------ */}
-
-              <div className="mt-7 grid gap-3 sm:grid-cols-2">
-
-                <button
-                  onClick={onDecline}
-                  className="flex items-center justify-center gap-2 rounded-2xl border border-[#e5dfe6] bg-white px-5 py-4 text-sm font-medium text-[#716b75] transition hover:border-[#cfc5d2] hover:bg-[#faf8fb]"
-                >
-                  <X size={18} />
-                  Decline
-                </button>
-
-
-                <button
-                  onClick={onAccept}
-                  className="flex items-center justify-center gap-2 rounded-2xl bg-[#29252d] px-5 py-4 text-sm font-medium text-white transition hover:bg-[#3b3540]"
-                >
-                  <Check size={18} />
-                  Accept connection
-                </button>
-
               </div>
 
             </div>
+          </div>
 
-
-            {/* Safety note */}
-            <div className="mt-5 flex items-start gap-3">
-
+          {/* Safety reminder */}
+          <div className="mt-7 rounded-2xl border border-[#e8dfe9] bg-white p-4">
+            <div className="flex gap-3">
               <ShieldCheck
-                size={16}
-                className="mt-0.5 shrink-0 text-[#9a7ba5]"
+                size={20}
+                className="mt-0.5 shrink-0 text-[#80678b]"
               />
 
-              <p className="text-xs leading-5 text-[#958d97]">
-                LUMI Companions are volunteers or eligible members
-                who choose to support others. Accepting a request
-                does not make you responsible for the other person's
-                wellbeing.
-              </p>
+              <div>
+                <p className="text-sm font-medium text-[#554b59]">
+                  Keep personal information private
+                </p>
 
+                <p className="mt-1 text-xs leading-5 text-[#817783]">
+                  Avoid sharing passwords, financial information,
+                  exact location, or other sensitive personal
+                  information in a support conversation.
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+
+            <button
+              onClick={onBack}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#e3d9e5] bg-white px-5 py-3.5 text-sm font-medium text-[#625867] transition hover:bg-[#faf7fb]"
+            >
+              <ArrowLeft size={17} />
+              Go back
+            </button>
+
+            <button
+              onClick={handleContinue}
+              disabled={!companionId}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-medium transition ${
+                companionId
+                  ? 'bg-[#4f4654] text-white hover:bg-[#403843]'
+                  : 'cursor-not-allowed bg-[#e7e1e7] text-[#aaa1ad]'
+              }`}
+            >
+              Send connection request
+              <ArrowRight size={17} />
+            </button>
 
           </div>
 
         </div>
 
-      </section>
-
-    </main>
+        {/* Small footer */}
+        <p className="mt-5 text-center text-xs text-[#958a98]">
+          You can leave a connection at any time.
+        </p>
+      </div>
+    </div>
   )
 }
 

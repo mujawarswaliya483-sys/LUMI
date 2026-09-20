@@ -1,376 +1,227 @@
+import { useState } from 'react'
 import {
   ArrowLeft,
   Flag,
-  MoreHorizontal,
+  Heart,
   Send,
   ShieldCheck,
   UserRound,
-  X,
 } from 'lucide-react'
-
-import { useState } from 'react'
-
 import Lumi from '../components/Lumi'
 
-
-// --------------------------------------------------
-// TEMPORARY CHAT DATA
-// --------------------------------------------------
-//
-// These messages are only for frontend testing.
-//
-// Later:
-//
-// React
-//   ↓
-// Socket.IO
-//   ↓
-// Express backend
-//   ↓
-// MongoDB
-//
-// --------------------------------------------------
-
-const initialMessages = [
-  {
-    id: 1,
-    sender: 'companion',
-    text: "Hey. I'm here to listen. You don't have to explain everything at once.",
-  },
-
-  {
-    id: 2,
-    sender: 'user',
-    text: "I've just been feeling really alone lately.",
-  },
-
-  {
-    id: 3,
-    sender: 'companion',
-    text: "That sounds difficult. You can take your time. What has been making the loneliness feel stronger recently?",
-  },
-]
-
-
-function Chat({ onBack, onLeave }) {
-
-  // ------------------------------------------------
-  // MESSAGES STATE
-  // ------------------------------------------------
-
-  const [messages, setMessages] = useState(initialMessages)
-
-
-  // ------------------------------------------------
-  // INPUT STATE
-  // ------------------------------------------------
-
-  const [input, setInput] = useState('')
-
-
-  // ------------------------------------------------
-  // MENU STATE
-  // ------------------------------------------------
-
-  const [showMenu, setShowMenu] = useState(false)
-
-
-  // ------------------------------------------------
-  // LEAVE CONFIRMATION STATE
-  // ------------------------------------------------
-  //
-  // false → don't show confirmation
-  // true  → show confirmation
-  //
-  const [showLeaveConfirmation, setShowLeaveConfirmation] =
-    useState(false)
-
-
-  // ------------------------------------------------
-  // REPORT CONFIRMATION STATE
-  // ------------------------------------------------
-
-  const [showReportConfirmation, setShowReportConfirmation] =
-    useState(false)
-
-
-  // ------------------------------------------------
-  // SEND MESSAGE
-  // ------------------------------------------------
+function Chat({
+  companionId,
+  onBack,
+  onContinue,
+}) {
+  const [message, setMessage] = useState('')
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: 'companion',
+      text: "Hey. I'm here to listen. You can start wherever feels comfortable.",
+    },
+  ])
 
   const handleSend = () => {
+    const trimmedMessage = message.trim()
 
-    const trimmedMessage = input.trim()
+    if (!trimmedMessage) return
 
-
-    // Don't send empty messages.
-    if (!trimmedMessage) {
-      return
-    }
-
-
-    // Temporary message object.
     const newMessage = {
       id: Date.now(),
       sender: 'user',
       text: trimmedMessage,
     }
 
-
-    // Add message to current conversation.
-    setMessages((previousMessages) => [
-      ...previousMessages,
+    setMessages((currentMessages) => [
+      ...currentMessages,
       newMessage,
     ])
 
+    setMessage('')
 
-    // Clear input.
-    setInput('')
+    // Prototype response.
+    // Later this will be replaced by the real chat backend.
+    setTimeout(() => {
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          id: Date.now() + 1,
+          sender: 'companion',
+          text: "Thank you for sharing that. You don't have to figure everything out at once.",
+        },
+      ])
+    }, 700)
   }
 
-
-  // ------------------------------------------------
-  // ENTER KEY
-  // ------------------------------------------------
-
   const handleKeyDown = (event) => {
-
     if (event.key === 'Enter' && !event.shiftKey) {
-
       event.preventDefault()
-
       handleSend()
     }
   }
 
-
-  // ------------------------------------------------
-  // CONFIRM LEAVE
-  // ------------------------------------------------
-
-  const confirmLeave = () => {
-
-    // In the future this is where we could call:
-    //
-    // POST /api/chat/session/end
-    //
-    console.log('Conversation ended by user.')
-
-    onLeave()
+  const handleEndConversation = () => {
+    onContinue({
+      companionId,
+      messages,
+    })
   }
-
-
-  // ------------------------------------------------
-  // REPORT CONVERSATION
-  // ------------------------------------------------
-
-  const handleReport = () => {
-
-    // For now we only simulate reporting.
-    //
-    // Later:
-    //
-    // POST /api/report
-    //
-    console.log('Conversation reported.')
-
-    setShowReportConfirmation(false)
-    setShowMenu(false)
-  }
-
 
   return (
-    <main className="relative min-h-screen bg-[#fcf8f5] text-[#29252d]">
+    <div className="min-h-screen bg-[#fcf8f5] px-4 py-6 text-[#29252d] sm:px-6">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-4xl flex-col">
 
-
-      {/* ==================================================
-          HEADER
-      ================================================== */}
-
-      <header className="border-b border-[#e8e0e9] bg-white">
-
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-
-          {/* Back */}
+        {/* Header */}
+        <div className="mb-5 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#716b75] transition hover:bg-[#fcf8f5] hover:text-[#29252d]"
+            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#6f6575] transition hover:bg-white"
           >
             <ArrowLeft size={18} />
             Back
           </button>
 
-
-          {/* Companion */}
-          <div className="flex items-center gap-3">
-
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f1e7f5] text-[#80668d]">
-              <UserRound size={19} />
-            </div>
-
-            <div className="hidden sm:block">
-
-              <p className="text-sm font-semibold">
-                LUMI Companion
-              </p>
-
-              <p className="text-xs text-[#8a828d]">
-                Anonymous connection
-              </p>
-
-            </div>
-
+          <div className="flex items-center gap-2 text-xs font-medium text-[#8a7d91]">
+            <div className="h-2 w-2 rounded-full bg-[#9bb59f]" />
+            PRIVATE SUPPORT CHAT
           </div>
+        </div>
 
+        {/* Chat container */}
+        <div className="flex flex-1 flex-col overflow-hidden rounded-[2rem] border border-[#e8dfe9] bg-white shadow-[0_20px_50px_rgba(90,65,100,0.06)]">
 
-          {/* Menu */}
-          <div className="relative">
+          {/* Chat header */}
+          <div className="border-b border-[#eee6ef] px-5 py-5 sm:px-7">
+            <div className="flex items-center gap-3">
 
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-[#716b75] transition hover:bg-[#fcf8f5]"
-              aria-label="Conversation options"
-            >
-              <MoreHorizontal size={20} />
-            </button>
-
-
-            {/* Dropdown */}
-            {showMenu && (
-
-              <div className="absolute right-0 top-12 z-30 w-56 rounded-2xl border border-[#e8e0e9] bg-white p-2 shadow-lg">
-
-                {/* Report */}
-                <button
-                  onClick={() => {
-                    setShowReportConfirmation(true)
-                    setShowMenu(false)
-                  }}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-[#716b75] hover:bg-[#fcf8f5]"
-                >
-                  <Flag size={17} />
-                  Report conversation
-                </button>
-
-
-                {/* Leave */}
-                <button
-                  onClick={() => {
-                    setShowLeaveConfirmation(true)
-                    setShowMenu(false)
-                  }}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm text-[#9a6666] hover:bg-[#fff7f7]"
-                >
-                  <X size={17} />
-                  Leave conversation
-                </button>
-
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eee3f2]">
+                <UserRound
+                  size={21}
+                  className="text-[#80678b]"
+                />
               </div>
 
-            )}
+              <div className="min-w-0 flex-1">
+                <h1 className="font-semibold">
+                  LUMI Companion
+                </h1>
 
-          </div>
+                <p className="mt-0.5 text-xs text-[#8a7d91]">
+                  Here to listen and share experience
+                </p>
+              </div>
 
-        </div>
-
-      </header>
-
-
-      {/* ==================================================
-          SAFETY BANNER
-      ================================================== */}
-
-      <div className="border-b border-[#eee7ef] bg-[#f8f4fa]">
-
-        <div className="mx-auto flex max-w-5xl items-start gap-3 px-5 py-3">
-
-          <ShieldCheck
-            size={17}
-            className="mt-0.5 shrink-0 text-[#80668d]"
-          />
-
-          <p className="text-xs leading-5 text-[#716b75]">
-            This is a peer-support conversation. Your Companion is
-            here to listen and share lived experience, not diagnose
-            or provide professional treatment. You can leave anytime.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      {/* ==================================================
-          CHAT AREA
-      ================================================== */}
-
-      <section className="mx-auto flex min-h-[calc(100vh-145px)] max-w-5xl flex-col">
-
-
-        {/* Messages */}
-        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-8">
-
-          {messages.map((message) => {
-
-            const isUser = message.sender === 'user'
-
-
-            return (
-
-              <div
-                key={message.id}
-                className={`flex ${
-                  isUser
-                    ? 'justify-end'
-                    : 'justify-start'
-                }`}
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[#918592] transition hover:bg-[#faf7fb]"
+                title="Report conversation"
               >
+                <Flag size={17} />
+              </button>
+            </div>
+          </div>
 
-                <div
-                  className={`max-w-[82%] rounded-3xl px-5 py-3.5 text-sm leading-6 sm:max-w-[65%] ${
-                    isUser
-                      ? 'rounded-br-md bg-[#29252d] text-white'
-                      : 'rounded-bl-md border border-[#e8e0e9] bg-white text-[#4f4854]'
-                  }`}
-                >
-                  {message.text}
-                </div>
-
-              </div>
-
-            )
-
-          })}
-
-        </div>
-
-
-        {/* ==================================================
-            INPUT
-        ================================================== */}
-
-        <div className="border-t border-[#e8e0e9] bg-[#fcf8f5] px-5 py-4">
-
-          <div className="mx-auto max-w-3xl">
-
-            <div className="flex items-end gap-3 rounded-3xl border border-[#ddd5df] bg-white p-2 shadow-sm">
-
-              <textarea
-                value={input}
-                onChange={(event) =>
-                  setInput(event.target.value)
-                }
-                onKeyDown={handleKeyDown}
-                placeholder="Write something..."
-                rows={1}
-                className="max-h-32 min-h-12 flex-1 resize-none bg-transparent px-4 py-3 text-sm outline-none placeholder:text-[#aaa2ad]"
+          {/* Safety reminder */}
+          <div className="border-b border-[#eee6ef] bg-[#faf7fb] px-5 py-3 sm:px-7">
+            <div className="flex items-center gap-2 text-xs leading-5 text-[#756d78]">
+              <ShieldCheck
+                size={15}
+                className="shrink-0 text-[#80678b]"
               />
 
+              <span>
+                Share only what feels comfortable. You can leave this
+                conversation whenever you want.
+              </span>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-7">
+
+            <div className="mb-5 flex justify-center">
+              <div className="rounded-full bg-[#f5eff6] px-4 py-2 text-[11px] text-[#8a7d91]">
+                You are connected with a LUMI Companion
+              </div>
+            </div>
+
+            <div className="space-y-4">
+
+              {messages.map((item) => {
+                const isUser = item.sender === 'user'
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex ${
+                      isUser
+                        ? 'justify-end'
+                        : 'justify-start'
+                    }`}
+                  >
+                    {!isUser && (
+                      <div className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eee3f2]">
+                        <Heart
+                          size={15}
+                          className="text-[#80678b]"
+                        />
+                      </div>
+                    )}
+
+                    <div
+                      className={`max-w-[78%] rounded-3xl px-4 py-3 text-sm leading-6 ${
+                        isUser
+                          ? 'rounded-br-md bg-[#4f4654] text-white'
+                          : 'rounded-bl-md bg-[#f4eef6] text-[#514955]'
+                      }`}
+                    >
+                      {item.text}
+                    </div>
+                  </div>
+                )
+              })}
+
+            </div>
+          </div>
+
+          {/* Lumi reminder */}
+          <div className="border-t border-[#eee6ef] px-5 py-3 sm:px-7">
+            <div className="flex items-center gap-3">
+              <div className="scale-[0.45] origin-left -my-8 -mr-20">
+                <Lumi />
+              </div>
+
+              <p className="text-xs leading-5 text-[#817783]">
+                You don't need to solve everything in this conversation.
+              </p>
+            </div>
+          </div>
+
+          {/* Message input */}
+          <div className="border-t border-[#eee6ef] p-4 sm:p-5">
+
+            <div className="flex items-end gap-3">
+
+              <textarea
+                value={message}
+                onChange={(event) =>
+                  setMessage(event.target.value)
+                }
+                onKeyDown={handleKeyDown}
+                rows={1}
+                placeholder="Share what feels comfortable..."
+                className="max-h-32 min-h-[48px] flex-1 resize-none rounded-2xl border border-[#e4dbe6] bg-[#faf8fb] px-4 py-3 text-sm text-[#403843] outline-none transition placeholder:text-[#aaa1ad] focus:border-[#bba8c2] focus:ring-2 focus:ring-[#eee3f2]"
+              />
 
               <button
                 onClick={handleSend}
-                disabled={!input.trim()}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#29252d] text-white transition hover:bg-[#3b3540] disabled:cursor-not-allowed disabled:opacity-30"
+                disabled={!message.trim()}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition ${
+                  message.trim()
+                    ? 'bg-[#4f4654] text-white hover:bg-[#403843]'
+                    : 'cursor-not-allowed bg-[#e7e1e7] text-[#aaa1ad]'
+                }`}
                 aria-label="Send message"
               >
                 <Send size={18} />
@@ -378,141 +229,25 @@ function Chat({ onBack, onLeave }) {
 
             </div>
 
-
-            <p className="mt-3 text-center text-[11px] leading-5 text-[#aaa2ad]">
-              Please don't share passwords, phone numbers, addresses,
-              or other private contact information.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ==================================================
-          LEAVE CONFIRMATION MODAL
-      ================================================== */}
-
-      {showLeaveConfirmation && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-5 backdrop-blur-[2px]">
-
-          <div className="w-full max-w-md rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-2xl">
-
-            <div className="flex items-start justify-between gap-4">
-
-              <div>
-
-                <h2 className="text-xl font-semibold">
-                  Leave this conversation?
-                </h2>
-
-                <p className="mt-2 text-sm leading-6 text-[#716b75]">
-                  You can leave whenever you want. The conversation
-                  will be closed and you won't need to explain why.
-                </p>
-
-              </div>
-
-
-              <button
-                onClick={() => setShowLeaveConfirmation(false)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#716b75] hover:bg-[#fcf8f5]"
-              >
-                <X size={18} />
-              </button>
-
-            </div>
-
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-
-              <button
-                onClick={() => setShowLeaveConfirmation(false)}
-                className="rounded-2xl border border-[#e5dfe6] px-5 py-3 text-sm font-medium text-[#716b75] hover:bg-[#faf8fb]"
-              >
-                Stay
-              </button>
-
-
-              <button
-                onClick={confirmLeave}
-                className="rounded-2xl bg-[#9a6666] px-5 py-3 text-sm font-medium text-white hover:bg-[#855757]"
-              >
-                Leave conversation
-              </button>
-
-            </div>
+            {/* End conversation */}
+            <button
+              onClick={handleEndConversation}
+              className="mx-auto mt-4 block text-xs font-medium text-[#8b7d8f] underline-offset-4 transition hover:text-[#5d5261] hover:underline"
+            >
+              End conversation
+            </button>
 
           </div>
-
         </div>
 
-      )}
+        {/* Footer */}
+        <p className="mt-4 text-center text-[11px] leading-5 text-[#958a98]">
+          LUMI Companions provide peer support, not professional or
+          emergency care.
+        </p>
 
-
-      {/* ==================================================
-          REPORT MODAL
-      ================================================== */}
-
-      {showReportConfirmation && (
-
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-5 backdrop-blur-[2px]">
-
-          <div className="w-full max-w-md rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-2xl">
-
-            <div className="flex items-start gap-4">
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f4e8e8] text-[#966565]">
-                <Flag size={19} />
-              </div>
-
-
-              <div>
-
-                <h2 className="text-xl font-semibold">
-                  Report this conversation?
-                </h2>
-
-                <p className="mt-2 text-sm leading-6 text-[#716b75]">
-                  Your report helps LUMI review potentially unsafe
-                  behaviour. Reporting does not reveal your private
-                  contact information to the other person.
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-
-              <button
-                onClick={() => setShowReportConfirmation(false)}
-                className="rounded-2xl border border-[#e5dfe6] px-5 py-3 text-sm font-medium text-[#716b75] hover:bg-[#faf8fb]"
-              >
-                Cancel
-              </button>
-
-
-              <button
-                onClick={handleReport}
-                className="rounded-2xl bg-[#9a6666] px-5 py-3 text-sm font-medium text-white hover:bg-[#855757]"
-              >
-                Submit report
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
-
-    </main>
+      </div>
+    </div>
   )
 }
 

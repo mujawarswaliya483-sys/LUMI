@@ -1,26 +1,28 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Heart,
+  Sparkles,
+} from 'lucide-react'
+import Lumi from '../components/Lumi'
 
-function ConnectOutcome({ onBack, onContinue }) {
-
-  // Stores the user's self-reported intensity after
-  // the conversation.
-  const [selectedIntensity, setSelectedIntensity] = useState(null)
-
-  // Stores what the user felt helped them.
-  const [selectedHelp, setSelectedHelp] = useState(null)
-
-  const helpOptions = [
+function ConnectOutcome({
+  intensityBefore,
+  onBack,
+  onContinue,
+}) {
+  const helpfulOptions = [
     {
       id: 'understood',
       label: 'Being understood',
     },
     {
-      id: 'talking',
+      id: 'talking-to-someone',
       label: 'Talking to someone',
     },
     {
-      id: 'sharing',
+      id: 'sharing-experience',
       label: 'Sharing my experience',
     },
     {
@@ -33,182 +35,218 @@ function ConnectOutcome({ onBack, onContinue }) {
     },
   ]
 
-  // Continue only when both questions
-  // have been answered.
-  const handleContinue = () => {
+  const [intensityAfter, setIntensityAfter] = useState(null)
+  const [whatHelped, setWhatHelped] = useState('')
 
-    if (
-      selectedIntensity === null ||
-      selectedHelp === null
-    ) {
-      return
-    }
+  const handleContinue = () => {
+    if (intensityAfter === null || !whatHelped) return
 
     onContinue({
-      intensityAfter: selectedIntensity,
-      whatHelped: selectedHelp,
+      intensityAfter,
+      whatHelped,
     })
   }
 
   return (
-    <main className="min-h-screen bg-[#fcf8f5] px-5 py-8 text-[#29252d]">
+    <div className="min-h-screen bg-[#fcf8f5] px-5 py-8 text-[#29252d]">
+      <div className="mx-auto max-w-3xl">
 
-      <div className="mx-auto max-w-2xl">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#6f6575] transition hover:bg-white"
+          >
+            <ArrowLeft size={18} />
+            Back
+          </button>
 
-        {/* Back button */}
-        <button
-          onClick={onBack}
-          className="mb-8 inline-flex items-center gap-2 text-sm text-[#716b75] transition hover:text-[#29252d]"
-        >
-          <ArrowLeft size={17} />
-          Back
-        </button>
-
-
-        {/* Heading */}
-        <div className="mb-10">
-
-          <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#92769d]">
-            LUMI CHECK-IN
-          </p>
-
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-            How are you feeling now?
-          </h1>
-
-          <p className="mt-4 max-w-xl leading-7 text-[#716b75]">
-            There is no right answer. Just tell LUMI
-            how this moment feels after your conversation.
-          </p>
-
+          <div className="text-sm font-medium text-[#8a7d91]">
+            CHECK-IN
+          </div>
         </div>
 
+        {/* Main card */}
+        <div className="rounded-[2rem] border border-[#e8dfe9] bg-white p-6 shadow-[0_20px_50px_rgba(90,65,100,0.06)] sm:p-9">
 
-        {/* Intensity section */}
-        <section className="rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
+          {/* Lumi */}
+          <div className="flex justify-center">
+            <Lumi />
+          </div>
 
-          <h2 className="text-lg font-semibold">
-            How heavy does it feel right now?
-          </h2>
+          <div className="-mt-2 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eee3f2]">
+              <Heart
+                size={23}
+                className="text-[#80678b]"
+              />
+            </div>
 
-          <p className="mt-2 text-sm leading-6 text-[#958d97]">
-            Choose a number from 0 to 10.
-            This is your own description of the moment,
-            not a medical measurement.
-          </p>
+            <h1 className="mt-5 text-3xl font-semibold tracking-tight">
+              How are you feeling now?
+            </h1>
 
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-[#756d78]">
+              There is no right answer. This helps LUMI understand
+              what kind of support was useful to you.
+            </p>
+          </div>
 
-          {/* 0–10 buttons */}
-          <div className="mt-6 grid grid-cols-6 gap-2 sm:grid-cols-11">
+          {/* Intensity */}
+          <div className="mt-9">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-base font-semibold">
+                  How heavy does it feel now?
+                </h2>
 
-            {Array.from({ length: 11 }, (_, index) => {
+                <p className="mt-1 text-xs text-[#8a7d91]">
+                  Choose a number from 0 to 10.
+                </p>
+              </div>
 
-              const isSelected =
-                selectedIntensity === index
+              {intensityAfter !== null && (
+                <div className="text-2xl font-semibold text-[#80678b]">
+                  {intensityAfter}
+                </div>
+              )}
+            </div>
 
-              return (
+            <div className="mt-5 grid grid-cols-11 gap-1.5 sm:gap-2">
+              {Array.from({ length: 11 }, (_, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedIntensity(index)}
-                  className={`
-                    flex h-11 items-center justify-center
-                    rounded-xl border text-sm font-medium
-                    transition
-                    ${
-                      isSelected
-                        ? 'border-[#80668d] bg-[#80668d] text-white'
-                        : 'border-[#e8e0e9] bg-[#fcf8f5] text-[#716b75] hover:border-[#bda5cb]'
-                    }
-                  `}
+                  onClick={() => setIntensityAfter(index)}
+                  className={`flex h-10 items-center justify-center rounded-xl text-xs font-medium transition ${
+                    intensityAfter === index
+                      ? 'bg-[#80678b] text-white'
+                      : 'bg-[#f5f0f6] text-[#766b79] hover:bg-[#ebe2ed]'
+                  }`}
                 >
                   {index}
                 </button>
-              )
-            })}
+              ))}
+            </div>
 
+            <div className="mt-2 flex justify-between text-[11px] text-[#968b98]">
+              <span>Not heavy</span>
+              <span>Very heavy</span>
+            </div>
           </div>
 
+          {/* Helpful option */}
+          <div className="mt-9">
+            <div className="flex items-center gap-2">
+              <Sparkles
+                size={18}
+                className="text-[#80678b]"
+              />
 
-          <div className="mt-3 flex justify-between text-xs text-[#958d97]">
-            <span>Very light</span>
-            <span>Extremely heavy</span>
-          </div>
+              <h2 className="text-base font-semibold">
+                What helped most?
+              </h2>
+            </div>
 
-        </section>
+            <p className="mt-1 text-xs text-[#8a7d91]">
+              Your answer helps LUMI personalize future support.
+            </p>
 
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {helpfulOptions.map((option) => {
+                const isSelected =
+                  whatHelped === option.id
 
-        {/* What helped section */}
-        <section className="mt-6 rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
-
-          <h2 className="text-lg font-semibold">
-            What helped most?
-          </h2>
-
-          <p className="mt-2 text-sm leading-6 text-[#958d97]">
-            This helps LUMI understand what kind of
-            support was useful for you.
-          </p>
-
-
-          <div className="mt-6 space-y-3">
-
-            {helpOptions.map((option) => {
-
-              const isSelected =
-                selectedHelp === option.id
-
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => setSelectedHelp(option.id)}
-                  className={`
-                    w-full rounded-2xl border p-4
-                    text-left text-sm font-medium
-                    transition
-                    ${
-                      isSelected
-                        ? 'border-[#80668d] bg-[#f4edf7] text-[#5f4c67]'
-                        : 'border-[#e8e0e9] bg-white text-[#514b54] hover:border-[#cbb9d2]'
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() =>
+                      setWhatHelped(option.id)
                     }
-                  `}
-                >
-                  {option.label}
-                </button>
-              )
-            })}
-
+                    className={`rounded-2xl border px-4 py-3.5 text-left text-sm transition ${
+                      isSelected
+                        ? 'border-[#9d83a8] bg-[#f7f0f9] text-[#554b59]'
+                        : 'border-[#e6dde8] bg-white text-[#6f6575] hover:bg-[#faf7fb]'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
-        </section>
+          {/* Before / after */}
+          {intensityAfter !== null &&
+            intensityBefore !== null && (
+              <div className="mt-7 rounded-2xl bg-[#faf7fb] p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#93849a]">
+                  Your check-in
+                </p>
 
+                <div className="mt-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-[#8a7d91]">
+                      Before
+                    </p>
 
-        {/* Continue button */}
-        <button
-          onClick={handleContinue}
-          disabled={
-            selectedIntensity === null ||
-            selectedHelp === null
-          }
-          className={`
-            mt-8 flex w-full items-center
-            justify-center gap-2 rounded-2xl
-            px-6 py-4 text-sm font-semibold
-            transition
-            ${
-              selectedIntensity !== null &&
-              selectedHelp !== null
-                ? 'bg-[#29252d] text-white hover:bg-[#3b3540]'
-                : 'cursor-not-allowed bg-[#e8e2e8] text-[#aaa2ab]'
+                    <p className="mt-1 text-xl font-semibold">
+                      {intensityBefore}
+                    </p>
+                  </div>
+
+                  <ArrowRight
+                    size={18}
+                    className="text-[#a094a4]"
+                  />
+
+                  <div className="text-right">
+                    <p className="text-xs text-[#8a7d91]">
+                      Now
+                    </p>
+
+                    <p className="mt-1 text-xl font-semibold">
+                      {intensityAfter}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          {/* Privacy note */}
+          <div className="mt-6 rounded-2xl border border-[#eee6ef] p-4">
+            <p className="text-xs leading-5 text-[#817783]">
+              LUMI uses your answer to improve your future support
+              suggestions. Your intensity score is self-reported
+              and is not a medical measurement.
+            </p>
+          </div>
+
+          {/* Continue */}
+          <button
+            onClick={handleContinue}
+            disabled={
+              intensityAfter === null ||
+              !whatHelped
             }
-          `}
-        >
-          Continue
-          <ArrowRight size={17} />
-        </button>
+            className={`mt-7 flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-4 text-sm font-medium transition ${
+              intensityAfter !== null && whatHelped
+                ? 'bg-[#4f4654] text-white hover:bg-[#403843]'
+                : 'cursor-not-allowed bg-[#e7e1e7] text-[#aaa1ad]'
+            }`}
+          >
+            Finish check-in
+            <ArrowRight size={18} />
+          </button>
+
+        </div>
+
+        <p className="mt-5 text-center text-[11px] leading-5 text-[#958a98]">
+          You do not need to feel completely better for this
+          check-in to be useful.
+        </p>
 
       </div>
-
-    </main>
+    </div>
   )
 }
 

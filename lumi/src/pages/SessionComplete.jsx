@@ -1,9 +1,10 @@
-import { Check, ArrowRight } from 'lucide-react'
+import { Check, ArrowRight, Sparkles } from 'lucide-react'
 
 function SessionComplete({
   intensityBefore,
   intensityAfter,
   whatHelped,
+  routeSource,
   onContinue,
 }) {
 
@@ -52,6 +53,27 @@ function SessionComplete({
     helpedLabels[whatHelped] || 'something'
 
 
+  // --------------------------------------------------
+  // ROUTE SOURCE
+  // --------------------------------------------------
+  //
+  // This tells us whether the user:
+  //
+  // 1. Chose the support route directly
+  //
+  // OR
+  //
+  // 2. Asked LUMI for help deciding
+  //
+  // This is useful for personalization later.
+  // --------------------------------------------------
+
+  const routeSourceText =
+    routeSource === 'recommended'
+      ? 'LUMI helped you choose a support option for this moment.'
+      : 'You chose the support option that felt right for you.'
+
+
   return (
 
     <main className="flex min-h-screen items-center justify-center bg-[#fcf8f5] px-5 py-10 text-[#29252d]">
@@ -88,6 +110,48 @@ function SessionComplete({
           You didn't have to solve everything.
           You simply paused and noticed what was happening.
         </p>
+
+
+        {/* ------------------------------------------ */}
+        {/* ROUTE SOURCE */}
+        {/* ------------------------------------------ */}
+
+        <div className="mx-auto mt-6 flex max-w-lg items-start gap-3 rounded-2xl border border-[#e8e0e9] bg-[#f8f3fa] p-4 text-left">
+
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white">
+
+            <Sparkles
+              size={17}
+              className="text-[#80668d]"
+            />
+
+          </div>
+
+
+          <div>
+
+            <p className="text-sm font-semibold text-[#514b54]">
+              Your support choice
+            </p>
+
+
+            <p className="mt-1 text-sm leading-6 text-[#716b75]">
+              {routeSourceText}
+            </p>
+
+
+            {routeSource === 'recommended' && (
+
+              <p className="mt-2 text-xs leading-5 text-[#958d97]">
+                Your choice will help LUMI understand what
+                kinds of support you prefer over time.
+              </p>
+
+            )}
+
+          </div>
+
+        </div>
 
 
         {/* ------------------------------------------ */}
@@ -143,7 +207,13 @@ function SessionComplete({
             <p className="text-sm leading-6 text-[#66596b]">
 
               Your self-reported intensity is
-              <strong> {change} point{change !== 1 ? 's' : ''} lower </strong>
+
+              <strong>
+                {' '}
+                {change} point{change !== 1 ? 's' : ''} lower
+                {' '}
+              </strong>
+
               than when you started.
 
             </p>
