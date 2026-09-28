@@ -3,9 +3,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 function CheckIn({ onBack, onContinue }) {
 
-  // ==================================================
   // EMOTIONAL STATE
-  // ==================================================
 
   const emotions = [
     {
@@ -46,11 +44,8 @@ function CheckIn({ onBack, onContinue }) {
     },
   ]
 
-
-  // ==================================================
   // REACT STATE
-  // ==================================================
-  //
+
   // selectedEmotion remembers which emotion the
   // user selected.
   //
@@ -63,10 +58,7 @@ function CheckIn({ onBack, onContinue }) {
   const [selectedIntensity, setSelectedIntensity] =
     useState(null)
 
-
-  // ==================================================
   // CONTINUE
-  // ==================================================
 
   const handleContinue = () => {
 
@@ -79,16 +71,13 @@ function CheckIn({ onBack, onContinue }) {
       return
     }
 
-
     // Send both values to App.jsx.
 
     onContinue({
       emotion: selectedEmotion,
       intensityBefore: selectedIntensity,
     })
-
   }
-
 
   return (
 
@@ -96,10 +85,7 @@ function CheckIn({ onBack, onContinue }) {
 
       <div className="mx-auto max-w-2xl">
 
-
-        {/* ========================================== */}
         {/* BACK */}
-        {/* ========================================== */}
 
         <button
           onClick={onBack}
@@ -109,49 +95,35 @@ function CheckIn({ onBack, onContinue }) {
           Back
         </button>
 
-
-        {/* ========================================== */}
         {/* HEADER */}
-        {/* ========================================== */}
 
         <div className="mb-10">
-
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#92769d]">
             LUMI CHECK-IN
           </p>
-
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
             What's happening right now?
           </h1>
 
-
           <p className="mt-4 max-w-xl leading-7 text-[#716b75]">
             You don't need to explain everything.
             Just choose what feels closest to your experience.
           </p>
-
         </div>
 
-
-        {/* ========================================== */}
         {/* EMOTION OPTIONS */}
-        {/* ========================================== */}
 
         <section className="rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
-
           <h2 className="text-lg font-semibold">
             What feels closest?
           </h2>
 
-
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
 
             {emotions.map((emotion) => {
-
               const isSelected =
                 selectedEmotion === emotion.id
-
 
               return (
 
@@ -172,37 +144,25 @@ function CheckIn({ onBack, onContinue }) {
                 >
                   {emotion.label}
                 </button>
-
               )
-
             })}
-
           </div>
-
         </section>
 
-
-        {/* ========================================== */}
         {/* INTENSITY */}
-        {/* ========================================== */}
 
         <section className="mt-6 rounded-3xl border border-[#e8e0e9] bg-white p-6 shadow-sm sm:p-8">
-
           <h2 className="text-lg font-semibold">
             How heavy does it feel right now?
           </h2>
-
 
           <p className="mt-2 text-sm leading-6 text-[#958d97]">
             Choose a number from 0 to 10.
             This is your own description of the moment,
             not a medical measurement.
           </p>
-
-
-          {/* ---------------------------------------- */}
+        
           {/* NUMBER BUTTONS */}
-          {/* ---------------------------------------- */}
 
           <div className="mt-6 grid grid-cols-6 gap-2 sm:grid-cols-11">
 
@@ -213,9 +173,7 @@ function CheckIn({ onBack, onContinue }) {
                 const isSelected =
                   selectedIntensity === index
 
-
                 return (
-
                   <button
                     key={index}
                     onClick={() =>
@@ -234,14 +192,10 @@ function CheckIn({ onBack, onContinue }) {
                   >
                     {index}
                   </button>
-
                 )
-
               }
             )}
-
           </div>
-
 
           <div className="mt-3 flex justify-between text-xs text-[#958d97]">
 
@@ -284,12 +238,8 @@ function CheckIn({ onBack, onContinue }) {
           Continue
           <ArrowRight size={17} />
         </button>
-
-
       </div>
-
     </main>
-
   )
 }
 

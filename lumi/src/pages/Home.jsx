@@ -283,14 +283,10 @@ function Home({ onStart }) {
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-[#7b737e]">
-
                 Safe, pseudonymous companion support based on shared
                 experience.
-
               </p>
-
             </div>
-
 
             {/* PROCESS */}
 
@@ -305,12 +301,9 @@ function Home({ onStart }) {
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-[#7b737e]">
-
                 Structured reflection to slow down recurring thoughts and
                 understand what is happening.
-
               </p>
-
             </div>
 
 
@@ -327,43 +320,26 @@ function Home({ onStart }) {
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-[#7b737e]">
-
                 A short grounding experience when you don't want to talk.
-
               </p>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
-
-      {/* ==========================================
-          FOOTER
-          ========================================== */}
 
       <footer
         id="privacy"
         className="relative z-10 border-t border-[#e9e1e6] px-6 py-8"
       >
-
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-sm text-[#817983] sm:flex-row">
-
           <p>
             © 2026 LUMI
           </p>
-
           <p>
             Support, not replacement for professional care.
           </p>
-
         </div>
-
       </footer>
-
     </main>
   )
 }

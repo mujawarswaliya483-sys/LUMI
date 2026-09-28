@@ -58,7 +58,7 @@ import { saveSession } from './utils/sessionStorage'
 import { buildPersonalSupportProfile } from './utils/personalization'
 
 function App() {
-
+ 8
   // ==================================================
   // CURRENT SCREEN
   // ==================================================
@@ -177,7 +177,6 @@ function App() {
     // Recalculate personalization
     const updatedProfile =
       buildPersonalSupportProfile()
-
     setPersonalProfile(updatedProfile)
 
     // Update common session state
@@ -877,29 +876,16 @@ function App() {
   // ==================================================
 
   if (screen === 'connect') {
-
-    return (
-      <Connect
-        onBack={() =>
-          setScreen('need-discovery')
-        }
-
-        onContinue={(companion) => {
-
-          console.log(
-            'Selected Companion:',
-            companion
-          )
-
-          // Store the selected Companion
-          setSelectedCompanion(companion)
-
-          // Continue to consent
-          setScreen('connection-consent')
-        }}
-      />
-    )
-  }
+  return (
+    <Connect
+      onBack={() => setScreen('need-discovery')}
+      onContinue={(companion) => {
+        setSelectedCompanion(companion)
+        setScreen('connection-consent')
+      }}
+    />
+  )
+}
 
   // ==================================================
   // CONNECTION CONSENT
@@ -934,29 +920,14 @@ function App() {
   // COMPANION REQUEST
   // ==================================================
 if (screen === 'companion-request') {
-
   return (
     <CompanionRequest
-
-      companionId={
-        selectedCompanion?.id
-      }
-
-      onBack={() =>
-        setScreen('connection-consent')
-      }
-
+      companionId={selectedCompanion?.id}
+      onBack={() => setScreen('connection-consent')}
       onContinue={(companionId) => {
-
-        console.log(
-          'Companion accepted connection:',
-          companionId
-        )
-
+        console.log('Companion accepted connection:', companionId)
         setScreen('chat')
-
       }}
-
     />
   )
 }

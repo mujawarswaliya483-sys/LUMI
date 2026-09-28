@@ -14,10 +14,15 @@ function CompanionRequest({
   onBack,
   onContinue,
 }) {
-  const handleContinue = () => {
-    if (!companionId) return
+  const activeCompanionId = companionId || 'companion-a'
 
-    onContinue(companionId)
+  const handleContinue = () => {
+    console.log(
+      'Connection request confirmed:',
+      activeCompanionId
+    )
+
+    onContinue(activeCompanionId)
   }
 
   return (
@@ -27,6 +32,7 @@ function CompanionRequest({
         {/* Top navigation */}
         <div className="mb-8 flex items-center justify-between">
           <button
+            type="button"
             onClick={onBack}
             className="flex items-center gap-2 rounded-full px-3 py-2 text-sm text-[#6f6575] transition hover:bg-white"
           >
@@ -217,6 +223,7 @@ function CompanionRequest({
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
 
             <button
+              type="button"
               onClick={onBack}
               className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[#e3d9e5] bg-white px-5 py-3.5 text-sm font-medium text-[#625867] transition hover:bg-[#faf7fb]"
             >
@@ -225,13 +232,9 @@ function CompanionRequest({
             </button>
 
             <button
+              type="button"
               onClick={handleContinue}
-              disabled={!companionId}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-medium transition ${
-                companionId
-                  ? 'bg-[#4f4654] text-white hover:bg-[#403843]'
-                  : 'cursor-not-allowed bg-[#e7e1e7] text-[#aaa1ad]'
-              }`}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#4f4654] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-[#403843]"
             >
               Send connection request
               <ArrowRight size={17} />
